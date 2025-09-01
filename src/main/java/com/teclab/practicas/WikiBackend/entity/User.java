@@ -31,7 +31,7 @@ public class User {
     @Column(name = "password", nullable = false)
     private String password; // Se guardará encriptada
 
-    @ManyToMany(fetch = FetchType.EAGER)
+    @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
         name = "user_roles",
         joinColumns = @JoinColumn(name = "user_id"),
@@ -39,16 +39,13 @@ public class User {
     )
     private Set<Role> roles = new HashSet<>();
 
+    @Column(columnDefinition = "boolean default true")
+    private boolean enabled = true;
+
     @CreationTimestamp
     @Column(updatable = false)
     private LocalDateTime createdAt;
 
     @UpdateTimestamp
     private LocalDateTime updatedAt;
-
-    // Métodos de ciclo de vida (prePersist) para manejar createdAt
-    @PrePersist
-    protected void onCreate() {
-        this.createdAt = LocalDateTime.now();
-    }
 }
