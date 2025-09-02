@@ -27,10 +27,10 @@ public class JwtUtils {
     private String jwtSecret;
 
     @Value("${jwt.jwtExpirationAccessTokenMs}")
-    private int jwtExpirationAccessTokenMs;
+    private long jwtExpirationAccessTokenMs;
 
     @Value("${jwt.jwtExpirationRefreshTokenMs}")
-    private int jwtExpirationRefreshTokenMs;
+    private long jwtExpirationRefreshTokenMs;
 
     private Key key() {
         return Keys.hmacShaKeyFor(Decoders.BASE64.decode(jwtSecret));
