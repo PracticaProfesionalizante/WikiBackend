@@ -23,14 +23,14 @@ public class SecurityConfig {
 
     private final UserService userService;
     private final AuthEntryPointJwt unauthorizedHandler;
-    private final AuthTokenFilter authTokenFilter;
+    private final JwtTokenFilter jwtTokenFilter;
 
     public SecurityConfig(UserService userService,
                           AuthEntryPointJwt unauthorizedHandler,
-                          AuthTokenFilter authTokenFilter) {
+                          JwtTokenFilter jwtTokenFilter) {
         this.userService = userService;
         this.unauthorizedHandler = unauthorizedHandler;
-        this.authTokenFilter = authTokenFilter;
+        this.jwtTokenFilter = jwtTokenFilter;
     }
 
     @Bean
@@ -69,7 +69,7 @@ public class SecurityConfig {
                 );
 
         http.authenticationProvider(authenticationProvider());
-        http.addFilterBefore(authTokenFilter, UsernamePasswordAuthenticationFilter.class);
+        http.addFilterBefore(jwtTokenFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
