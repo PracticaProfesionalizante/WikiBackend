@@ -30,7 +30,7 @@ public class UserService implements UserDetailsService {
                 user.getUsername(),
                 user.getPassword(),
                 user.getRoles().stream()
-                    .map(role -> new SimpleGrantedAuthority(role.getName()))
+                    .map(role -> new SimpleGrantedAuthority(role.getName().name()))
                     .collect(Collectors.toList()));
     }
 }
