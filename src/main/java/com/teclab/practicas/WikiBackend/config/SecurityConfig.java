@@ -61,6 +61,7 @@ public class SecurityConfig {
 
                         // Endpoints públicos que no necesitan autenticación
                         .requestMatchers("/auth/login").permitAll()
+                        .requestMatchers("/auth/register").permitAll()
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
                         .requestMatchers("/actuator/**").permitAll() // Por si tienes endpoints de Spring Actuator
 
