@@ -1,6 +1,6 @@
 package com.teclab.practicas.WikiBackend.config;
 
-import com.teclab.practicas.WikiBackend.service.UserService;
+import com.teclab.practicas.WikiBackend.service.UserDetailServiceImpl;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -21,14 +21,14 @@ import static org.springframework.security.config.Customizer.withDefaults;
 @EnableMethodSecurity // Permite seguridad a nivel de método con @PreAuthorize
 public class SecurityConfig {
 
-    private final UserService userService;
+    private final UserDetailServiceImpl userDetailServiceImpl;
     private final AuthEntryPointJwt unauthorizedHandler;
     private final JwtTokenFilter jwtTokenFilter;
 
-    public SecurityConfig(UserService userService,
+    public SecurityConfig(UserDetailServiceImpl userDetailServiceImpl,
                           AuthEntryPointJwt unauthorizedHandler,
                           JwtTokenFilter jwtTokenFilter) {
-        this.userService = userService;
+        this.userDetailServiceImpl = userDetailServiceImpl;
         this.unauthorizedHandler = unauthorizedHandler;
         this.jwtTokenFilter = jwtTokenFilter;
     }
@@ -41,7 +41,7 @@ public class SecurityConfig {
     @Bean
     public DaoAuthenticationProvider authenticationProvider() {
         DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
-        authProvider.setUserDetailsService(userService);
+        authProvider.setUserDetailsService(userDetailServiceImpl);
         authProvider.setPasswordEncoder(passwordEncoder());
         return authProvider;
     }
