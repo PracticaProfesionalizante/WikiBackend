@@ -10,7 +10,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     // Método para buscar un usuario por su nombre de usuario
     @EntityGraph(attributePaths = "roles")
-    Optional<User> findByUsername(String username);
+    Optional<User> findByEmail(String email);
 
     // Método para verificar si un nombre de usuario ya existe
     boolean existsByUsername(String username);
