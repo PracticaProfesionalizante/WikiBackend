@@ -28,32 +28,6 @@ public class UserResponseDto {
     private LocalDateTime updatedAt;
 
 
-    private UserResponseDto toUserMeResponse(User user) {
-        UserResponseDto dto = new UserResponseDto();
-        dto.setId(user.getId());
-        dto.setUsername(user.getUsername());
-        dto.setEmail(user.getEmail());
-        dto.setRoles(user.getRoles().stream()
-                .map(role -> role.getName().name())
-                .collect(Collectors.toSet()));
-        dto.setCreatedAt(user.getCreatedAt());
-        dto.setUpdatedAt(user.getUpdatedAt());
-        return dto;
-    }
-
-    private UserResponseDto toUserResponseDto(User user) {
-        UserResponseDto dto = new UserResponseDto();
-        dto.setId(user.getId());
-        dto.setUsername(user.getUsername());
-        dto.setEmail(user.getEmail());
-        dto.setEnabled(user.isEnabled());
-        dto.setCreatedAt(user.getCreatedAt());
-        dto.setUpdatedAt(user.getUpdatedAt());
-        dto.setRoles(user.getRoles().stream()
-                .map(role -> role.getName().name())
-                .collect(Collectors.toSet()));
-        return dto;
-    }
 }
 
 

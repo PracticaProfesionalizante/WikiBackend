@@ -3,16 +3,18 @@ package com.teclab.practicas.WikiBackend.service;
 import com.teclab.practicas.WikiBackend.converter.auth.RegisterConverter;
 import com.teclab.practicas.WikiBackend.dto.auth.RegisterRequestDto;
 import com.teclab.practicas.WikiBackend.dto.auth.RegisterResponseDto;
+import com.teclab.practicas.WikiBackend.dto.user.UserResponseDto;
 import com.teclab.practicas.WikiBackend.entity.Roles;
 import com.teclab.practicas.WikiBackend.entity.User;
 import com.teclab.practicas.WikiBackend.exception.EmailIsExistente;
 import com.teclab.practicas.WikiBackend.repository.RolesRepository;
 import com.teclab.practicas.WikiBackend.repository.UserRepository;
 import jakarta.transaction.Transactional;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -51,6 +53,7 @@ public class UserServiceImpl implements UserService {
         return registerConverter.toDto(userCreated);
     }
 
+
     public void userExists(String email) {
         Optional<User> existingUser = userRepository.findByEmail(email);
         if (existingUser.isPresent()) {
@@ -68,6 +71,32 @@ public class UserServiceImpl implements UserService {
                 .collect(Collectors.toSet());
     }
 
+
+        @Override
+        public List<UserResponseDto> getAllUsers() {
+            return userRepository.findAll().stream()
+                    .map(this::toUserResponseDto)
+                    .collect(Collectors.toList());
+        }
+        @Override
+        public UserResponseDto getMyUser() {
+        return userRepository.findById().stream()
+                .map(this::toUserResponseDto)
+    }
+
+        private UserResponseDto toUserResponseDto(User user) {
+        UserResponseDto dto = new UserResponseDto();
+        dto.setId(user.getId());
+        dto.setUsername(user.getUsername());
+        dto.setEmail(user.getEmail());
+        dto.setEnabled(user.isEnabled());
+        dto.setCreatedAt(user.getCreatedAt());
+        dto.setUpdatedAt(user.getUpdatedAt());
+        dto.setRoles(user.getRoles().stream()
+                .map(role -> role.getName().name())
+                .collect(Collectors.toSet()));
+        return dto;
+    }
 
 
 
