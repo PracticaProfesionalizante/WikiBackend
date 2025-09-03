@@ -27,8 +27,8 @@ public class UserController {
 
     @GetMapping
     @PreAuthorize("hasRole('SUPER_USER')")
-    public ResponseEntity<List<UserResponseDto>> getAllUsers() {               //preguntar???
-        return ResponseEntity.ok(userService.getAllUsers());          //hacer luego del comit de erich LISTA
+    public ResponseEntity<List<UserResponseDto>> getAllUsers() {
+        return ResponseEntity.ok(userService.getAllUsers());
     }
 
 
