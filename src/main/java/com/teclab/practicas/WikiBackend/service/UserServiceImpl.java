@@ -16,7 +16,6 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -112,10 +111,15 @@ public class UserServiceImpl implements UserService {
     }
 
     private void userExists(String email) {
-        Optional<User> existingUser = userRepository.findByEmail(email);
-        if (existingUser.isPresent()) {
+        System.out.println("userExists before repo: " + email);
+        boolean existingUser = userRepository.existsByEmail(email);
+        System.out.println("userExists after repo: " + existingUser);
+
+        if (existingUser) {
+            System.out.println("existingUser.isPresent()");
             throw new EmailIsExistente("El email " + email + " ya está registrado.");
         }
+        System.out.println("userExists after if: " + existingUser);
     }
     private Set<Roles> getRoles (Set<String> roles){
         return roles.stream()
