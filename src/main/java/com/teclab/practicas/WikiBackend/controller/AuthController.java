@@ -7,6 +7,8 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -18,6 +20,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/auth")
 @Validated
+@Tag(name = "Autenticacion", description = "Poder loguearse, registrarse y actualizar token")
 public class AuthController {
 
     @Autowired
@@ -25,7 +28,7 @@ public class AuthController {
 
     @Operation(
         summary = "Iniciar Sesion",
-        description = "Genera y Devuelve un JWT para validar futuras acciones."
+        description = "Genera y devuelve un token de acceso con una vigencia de 30 min."
     )
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Inicio de Sesion con exito",
@@ -34,10 +37,8 @@ public class AuthController {
                 content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
     })
     @PostMapping("/login")
-    public ResponseEntity<LoginResponseDto> createAuthenticationToken(@Valid @RequestBody LoginRequestDto request) throws Exception {
-
+    public ResponseEntity<LoginResponseDto> login(@Valid @RequestBody LoginRequestDto request) throws Exception {
         LoginResponseDto token = userService.loginUser(request);
-
         return ResponseEntity.ok(token);
     }
 
@@ -47,13 +48,14 @@ public class AuthController {
     )
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Usuario creado con exito",
-                    content = @Content(schema = @Schema(implementation = RegisterRequestDto.class))),
+                    content = @Content(schema = @Schema(implementation = RegisterResponseDto.class))),
             @ApiResponse(responseCode = "422", description = "Argumento no valido",
                     content = @Content(schema = @Schema(implementation = ProblemDetail.class))),
             @ApiResponse(responseCode = "400", description = "Cuerpo de la peticion invalida",
                     content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
     })
     @PostMapping("/register")
+    @SecurityRequirement(name = "Bearer Authentication")
     public ResponseEntity<RegisterResponseDto> registerUser(@Valid @RequestBody RegisterRequestDto newUserDto) {
         System.out.println("registerUser: "
                 + newUserDto.getUsername() + " / "
@@ -68,12 +70,23 @@ public class AuthController {
 
     }
 
+    @Operation(
+            summary = "Refresh Token",
+            description = "Obtener Token de larga duracion ( 7 dias )"
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Token actualizado con exito",
+                    content = @Content(schema = @Schema(implementation = RegisterResponseDto.class))),
+            @ApiResponse(responseCode = "422", description = "Argumento no valido",
+                    content = @Content(schema = @Schema(implementation = ProblemDetail.class))),
+            @ApiResponse(responseCode = "400", description = "Cuerpo de la peticion invalida",
+                    content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
+    })
     @GetMapping("/refresh")
+    @SecurityRequirement(name = "Bearer Authentication")
     public ResponseEntity<RefreshResponseDto> refreshToken(@RequestHeader(name = "Authorization") String authorizationHeader) {
         String refreshToken = authorizationHeader.substring(7);
-
         RefreshResponseDto response = userService.refreshToken(refreshToken);
-
         return ResponseEntity.ok(response);
     }
 }
