@@ -1,7 +1,6 @@
 package com.teclab.practicas.WikiBackend.controller;
 
-import com.teclab.practicas.WikiBackend.dto.auth.RegisterRequestDto;
-import com.teclab.practicas.WikiBackend.dto.auth.RegisterResponseDto;
+import com.teclab.practicas.WikiBackend.dto.auth.*;
 import com.teclab.practicas.WikiBackend.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -14,10 +13,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/auth")
@@ -27,6 +23,23 @@ public class AuthController {
     @Autowired
     private UserService userService;
 
+    @Operation(
+        summary = "Iniciar Sesion",
+        description = "Genera y Devuelve un JWT para validar futuras acciones."
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Inicio de Sesion con exito",
+                content = @Content(schema = @Schema(implementation = LoginResponseDto.class))),
+        @ApiResponse(responseCode = "422", description = "Argumento no valido",
+                content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
+    })
+    @PostMapping("/login")
+    public ResponseEntity<LoginResponseDto> createAuthenticationToken(@Valid @RequestBody LoginRequestDto request) throws Exception {
+
+        LoginResponseDto token = userService.loginUser(request);
+
+        return ResponseEntity.ok(token);
+    }
 
     @Operation(
             summary = "Crear Cuenta",
@@ -42,66 +55,25 @@ public class AuthController {
     })
     @PostMapping("/register")
     public ResponseEntity<RegisterResponseDto> registerUser(@Valid @RequestBody RegisterRequestDto newUserDto) {
-
+        System.out.println("registerUser: "
+                + newUserDto.getUsername() + " / "
+                + newUserDto.getEmail() + " / "
+                + newUserDto.getPassword() + " / "
+                + newUserDto.getRoles().toString()
+        );
         RegisterResponseDto response = userService.createUser(newUserDto);
+        System.out.println("response: " + response);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
 
     }
+
+    @GetMapping("/refresh")
+    public ResponseEntity<RefreshResponseDto> refreshToken(@RequestHeader(name = "Authorization") String authorizationHeader) {
+        String refreshToken = authorizationHeader.substring(7);
+
+        RefreshResponseDto response = userService.refreshToken(refreshToken);
+
+        return ResponseEntity.ok(response);
+    }
 }
-
-
-//
-//    @Operation(
-//            summary = "Iniciar Sesion",
-//            description = "Genera y Devuelve un JWT para validar futuras acciones."
-//    )
-//    @ApiResponses(value = {
-//            @ApiResponse(responseCode = "200", description = "Inicio de Sesion con exito",
-//                    content = @Content(schema = @Schema(implementation = AuthResponseDTO.class))),
-//            @ApiResponse(responseCode = "422", description = "Argumento no valido",
-//                    content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
-//    })
-//    @PostMapping("/login")
-//    public ResponseEntity<?> createAuthenticationToken(@Valid @RequestBody AuthRequestDTO authRequestDTO) throws Exception {
-//        System.out.println("Login attempt: " + authRequestDTO.getEmail() + " / " + authRequestDTO.getPassword());
-//        try {
-//            authenticationManager.authenticate(
-//                    new UsernamePasswordAuthenticationToken(authRequestDTO.getEmail(), authRequestDTO.getPassword())
-//            );
-//        } catch (BadCredentialsException e) {
-//            throw new Exception("Credenciales incorrectas", e);
-//        }
-//
-//        final UserDetails userDetails = userDetailsService.loadUserByUsername(authRequestDTO.getEmail());
-//        final String jwt = jwtUtil.generateToken(userDetails);
-//
-//        return ResponseEntity.ok(new AuthResponseDTO(jwt));
-//    }
-//
-//    @Operation(
-//            summary = "Iniciar Sesion",
-//            description = "Genera y Devuelve un JWT para validar futuras acciones."
-//    )
-//    @ApiResponses(value = {
-//            @ApiResponse(responseCode = "200", description = "Inicio de Sesion con exito",
-//                    content = @Content(schema = @Schema(implementation = AuthResponseDTO.class))),
-//            @ApiResponse(responseCode = "422", description = "Argumento no valido",
-//                    content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
-//    })
-//    @PostMapping("/refresh")
-//    public ResponseEntity<?> createAuthenticationToken(@Valid @RequestBody AuthRequestDTO authRequestDTO) throws Exception {
-//        System.out.println("Login attempt: " + authRequestDTO.getEmail() + " / " + authRequestDTO.getPassword());
-//        try {
-//            authenticationManager.authenticate(
-//                    new UsernamePasswordAuthenticationToken(authRequestDTO.getEmail(), authRequestDTO.getPassword())
-//            );
-//        } catch (BadCredentialsException e) {
-//            throw new Exception("Credenciales incorrectas", e);
-//        }
-//
-//        final UserDetails userDetails = userDetailsService.loadUserByUsername(authRequestDTO.getEmail());
-//        final String jwt = jwtUtil.generateToken(userDetails);
-//
-//        return ResponseEntity.ok(new AuthResponseDTO(jwt));
-//    }

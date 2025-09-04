@@ -1,12 +1,9 @@
 package com.teclab.practicas.WikiBackend.service;
 
-import com.teclab.practicas.WikiBackend.dto.auth.RegisterRequestDto;
-import com.teclab.practicas.WikiBackend.dto.auth.RegisterResponseDto;
+import com.teclab.practicas.WikiBackend.dto.auth.*;
 
 public interface UserService {
     public RegisterResponseDto createUser(RegisterRequestDto newUserDto);
-
+    public LoginResponseDto loginUser(LoginRequestDto request);
+    public RefreshResponseDto refreshToken(String jwt);
 }
-
-//    public List<UserDto> getUserAll();
-//    public UserDto getUser();

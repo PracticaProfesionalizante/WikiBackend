@@ -1,15 +1,18 @@
 package com.teclab.practicas.WikiBackend.service;
 
+import com.teclab.practicas.WikiBackend.config.JwtUtils;
 import com.teclab.practicas.WikiBackend.converter.auth.RegisterConverter;
-import com.teclab.practicas.WikiBackend.dto.auth.RegisterRequestDto;
-import com.teclab.practicas.WikiBackend.dto.auth.RegisterResponseDto;
+import com.teclab.practicas.WikiBackend.dto.auth.*;
 import com.teclab.practicas.WikiBackend.entity.Roles;
 import com.teclab.practicas.WikiBackend.entity.User;
 import com.teclab.practicas.WikiBackend.exception.EmailIsExistente;
 import com.teclab.practicas.WikiBackend.repository.RolesRepository;
 import com.teclab.practicas.WikiBackend.repository.UserRepository;
 import jakarta.transaction.Transactional;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -19,45 +22,101 @@ import java.util.stream.Collectors;
 
 @Service
 public class UserServiceImpl implements UserService {
+
     private final UserRepository userRepository;
     private final RolesRepository rolesRepository;
     private final RegisterConverter registerConverter;
+
+    private final UserDetailServiceImpl userDetailServiceImpl;
     private final PasswordEncoder passwordEncoder;
+
+    private final JwtUtils jwtUtils;
+    private final AuthenticationManager authenticationManager;
 
     // Inyección de dependencias
     public UserServiceImpl(
             UserRepository userRepository,
             RolesRepository rolesRepository,
             RegisterConverter registerConverter,
-            PasswordEncoder passwordEncoder) {
+            UserDetailServiceImpl userDetailServiceImpl,
+            PasswordEncoder passwordEncoder,
+            JwtUtils jwtUtils,
+            AuthenticationManager authenticationManager) {
         this.userRepository = userRepository;
         this.rolesRepository = rolesRepository;
         this.registerConverter = registerConverter;
+        this.userDetailServiceImpl = userDetailServiceImpl;
         this.passwordEncoder = passwordEncoder;
+        this.jwtUtils = jwtUtils;
+        this.authenticationManager = authenticationManager;
     }
-
 
     @Override
     @Transactional
     public RegisterResponseDto createUser(RegisterRequestDto userDto) {
+        System.out.println("createUser before userExist: "
+                + userDto.getUsername() + " / "
+                + userDto.getEmail() + " / "
+                + userDto.getPassword() + " / "
+                + userDto.getRoles().toString()
+        );
         userExists(userDto.getEmail());
+        System.out.println("createUser after userExist: ");
 
         User newUser = registerConverter.toEntity(userDto);
+        System.out.println("createUser after toEntity: ");
+
         newUser.setPassword(passwordEncoder.encode(userDto.getPassword()));
+        System.out.println("createUser after encode: ");
+
         newUser.setRoles(getRoles(userDto.getRoles()));
+        System.out.println("createUser after getRoles: ");
 
         User userCreated = userRepository.save(newUser);
+        System.out.println("createUser after save: ");
 
         return registerConverter.toDto(userCreated);
     }
 
-    public void userExists(String email) {
+    @Override
+    @Transactional
+    public LoginResponseDto loginUser(LoginRequestDto request) {
+        System.out.println("Login attempt: " + request.getEmail() + " / " + request.getPassword());
+
+        Authentication authentication = authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword())
+        );
+        UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+
+        String jwt = jwtUtils.generateAccessToken(userDetails);
+
+        LoginResponseDto response = new LoginResponseDto();
+        response.setAccessToken(jwt);
+
+        return response;
+    }
+
+    @Override
+    public RefreshResponseDto refreshToken(String jwt){
+
+        String email = jwtUtils.getUsername(jwt);
+
+        UserDetails userDetails = userDetailServiceImpl.loadUserByUsername(email);
+
+        String newJwt = jwtUtils.generateRefreshToken(userDetails);
+
+        RefreshResponseDto response = new RefreshResponseDto();
+        response.setRefreshToken(newJwt);
+
+        return response;
+    }
+
+    private void userExists(String email) {
         Optional<User> existingUser = userRepository.findByEmail(email);
         if (existingUser.isPresent()) {
             throw new EmailIsExistente("El email " + email + " ya está registrado.");
         }
     }
-
     private Set<Roles> getRoles (Set<String> roles){
         return roles.stream()
                 .map(roleName -> {
@@ -67,8 +126,4 @@ public class UserServiceImpl implements UserService {
                 })
                 .collect(Collectors.toSet());
     }
-
-
-
-
 }
