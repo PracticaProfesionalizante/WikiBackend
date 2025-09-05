@@ -93,6 +93,7 @@ public class UserServiceImpl implements UserService {
         System.out.println("userExists after if: " + existingUser);
     }
 
+    @Transactional
     private Set<Roles> getRoles(Set<String> roles) {
         return roles.stream()
                 .map(roleName -> {
