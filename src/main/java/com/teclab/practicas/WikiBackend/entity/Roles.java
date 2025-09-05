@@ -7,7 +7,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 
-@Entity
+@Entity(name = "roles")
 @Table(name = "roles")
 @Getter
 @Setter
