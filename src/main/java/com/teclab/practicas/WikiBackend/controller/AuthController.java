@@ -89,7 +89,7 @@ public class AuthController {
             @ApiResponse(responseCode = "500", description = "Error del cliente",
                     content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
     })
-    @GetMapping("/refresh")
+    @PostMapping("/refresh")
     @SecurityRequirement(name = "Bearer Authentication")
     public ResponseEntity<RefreshResponseDto> refreshToken(@RequestHeader(name = "Authorization") String authorizationHeader) {
         String refreshToken = authorizationHeader.substring(7);
