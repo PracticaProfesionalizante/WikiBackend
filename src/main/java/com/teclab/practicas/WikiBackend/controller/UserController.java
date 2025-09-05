@@ -44,8 +44,9 @@ public class UserController {
     })
 
     @GetMapping("/me")
-    public ResponseEntity<UserResponseDto> getCurrentUser(Authentication authentication) {
-        UserResponseDto userResponseDto = (UserResponseDto) authentication.getPrincipal();
+    public ResponseEntity<UserResponseDto> getCurrentUser(@RequestHeader(name = "Authorization") String authorizationHeader) {
+        String token = authorizationHeader.substring(7);
+        UserResponseDto userResponseDto = userService.getMyUser(token);
         return ResponseEntity.ok(userResponseDto);
     }
     @Operation(
