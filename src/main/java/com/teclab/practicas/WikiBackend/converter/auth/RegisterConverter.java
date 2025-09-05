@@ -29,7 +29,7 @@ public class RegisterConverter {
         }
 
         RegisterResponseDto dto = new RegisterResponseDto();
-        dto.setId(user.getId() != null ? user.getId().intValue() : null);
+        dto.setId(user.getId() != null ? user.getId() : null);
         dto.setUsername(user.getUsername());
         dto.setEmail(user.getEmail());
         dto.setEnabled(user.isEnabled());
