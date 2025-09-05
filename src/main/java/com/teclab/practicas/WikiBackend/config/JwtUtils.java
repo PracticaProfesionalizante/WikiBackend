@@ -43,9 +43,9 @@ public class JwtUtils {
         return Jwts.builder()
                 .setSubject(userDetails.getUsername())
                 .claim("roles", roles)
-                .setIssuedAt(new Date())
-                .setExpiration(new Date((new Date()).getTime() + jwtExpirationRefreshTokenMs))
-                .signWith(key(), io.jsonwebtoken.SignatureAlgorithm.HS256)
+                .issuedAt(new Date())
+                .expiration(new Date((new Date()).getTime() + jwtExpirationRefreshTokenMs))
+                .signWith(key())
                 .compact();
     }
 
@@ -53,13 +53,14 @@ public class JwtUtils {
         String roles = userDetails.getAuthorities().stream()
                 .map(GrantedAuthority::getAuthority)
                 .collect(Collectors.joining(","));
+        System.out.println("roles " + roles);
 
         return Jwts.builder()
                 .setSubject(userDetails.getUsername())
                 .claim("roles", roles)
-                .setIssuedAt(new Date())
-                .setExpiration(new Date((new Date()).getTime() + jwtExpirationAccessTokenMs))
-                .signWith(key(), io.jsonwebtoken.SignatureAlgorithm.HS256)
+                .issuedAt(new Date())
+                .expiration(new Date((new Date()).getTime() + jwtExpirationAccessTokenMs))
+                .signWith(key())
                 .compact();
     }
 
