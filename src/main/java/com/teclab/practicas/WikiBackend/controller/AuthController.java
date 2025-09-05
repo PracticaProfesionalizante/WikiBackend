@@ -1,5 +1,6 @@
 package com.teclab.practicas.WikiBackend.controller;
 
+import com.teclab.practicas.WikiBackend.config.AuthEntryPointJwt;
 import com.teclab.practicas.WikiBackend.dto.auth.*;
 import com.teclab.practicas.WikiBackend.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -27,14 +28,18 @@ public class AuthController {
     private UserService userService;
 
     @Operation(
-        summary = "Iniciar Sesion",
-        description = "Genera y devuelve un token de acceso con una vigencia de 30 min."
+            summary = "Iniciar Sesion",
+            description = "Genera y devuelve un token de acceso con una vigencia de 30 min."
     )
     @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Inicio de Sesion con exito",
-                content = @Content(schema = @Schema(implementation = LoginResponseDto.class))),
-        @ApiResponse(responseCode = "422", description = "Argumento no valido",
-                content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
+            @ApiResponse(responseCode = "200", description = "Inicio de Sesion con exito",
+                    content = @Content(schema = @Schema(implementation = LoginResponseDto.class))),
+            @ApiResponse(responseCode = "422", description = "Argumento no valido",
+                    content = @Content(schema = @Schema(implementation = ProblemDetail.class))),
+            @ApiResponse(responseCode = "400", description = "Cuerpo de la peticion invalida",
+                    content = @Content(schema = @Schema(implementation = ProblemDetail.class))),
+            @ApiResponse(responseCode = "500", description = "Error del cliente",
+                    content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
     })
     @PostMapping("/login")
     public ResponseEntity<LoginResponseDto> login(@Valid @RequestBody LoginRequestDto request) throws Exception {
@@ -49,9 +54,13 @@ public class AuthController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Usuario creado con exito",
                     content = @Content(schema = @Schema(implementation = RegisterResponseDto.class))),
+            @ApiResponse(responseCode = "400", description = "Cuerpo de la peticion invalida",
+                    content = @Content(schema = @Schema(implementation = ProblemDetail.class))),
+            @ApiResponse(responseCode = "401", description = "Usuario sin loguearse",
+                    content = @Content(schema = @Schema(implementation = AuthEntryPointJwt.class))),
             @ApiResponse(responseCode = "422", description = "Argumento no valido",
                     content = @Content(schema = @Schema(implementation = ProblemDetail.class))),
-            @ApiResponse(responseCode = "400", description = "Cuerpo de la peticion invalida",
+            @ApiResponse(responseCode = "500", description = "Error del cliente",
                     content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
     })
     @PostMapping("/register")
@@ -77,9 +86,7 @@ public class AuthController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Token actualizado con exito",
                     content = @Content(schema = @Schema(implementation = RegisterResponseDto.class))),
-            @ApiResponse(responseCode = "422", description = "Argumento no valido",
-                    content = @Content(schema = @Schema(implementation = ProblemDetail.class))),
-            @ApiResponse(responseCode = "400", description = "Cuerpo de la peticion invalida",
+            @ApiResponse(responseCode = "500", description = "Error del cliente",
                     content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
     })
     @GetMapping("/refresh")
