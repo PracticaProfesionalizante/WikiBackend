@@ -9,6 +9,7 @@ import com.teclab.practicas.WikiBackend.exception.EmailIsExistente;
 import com.teclab.practicas.WikiBackend.repository.RolesRepository;
 import com.teclab.practicas.WikiBackend.repository.UserRepository;
 import jakarta.transaction.Transactional;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -33,6 +34,7 @@ public class UserServiceImpl implements UserService {
     private final AuthenticationManager authenticationManager;
 
     // Inyección de dependencias
+    @Autowired
     public UserServiceImpl(
             UserRepository userRepository,
             RolesRepository rolesRepository,
