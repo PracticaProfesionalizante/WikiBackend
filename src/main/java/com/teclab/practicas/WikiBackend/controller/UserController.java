@@ -12,14 +12,16 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.Authentication;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
 @RestController
 @RequestMapping("/users")
-@Tag(name = "Autenticación", description = "Poder loguearse, registrarse y actualizar token")
+@Tag(name = "Usuarios", description = "Obtener usuario propio y listado de usuarios")
 public class UserController {
     private final UserService userService;
     public UserController(UserService userService) {
@@ -27,11 +29,11 @@ public class UserController {
     }
 
     @Operation(
-            summary = "Iniciar Sesión",
-            description = "Genera y devuelve un token de acceso con una vigencia de 30 min."
+            summary = "Obtener mi usuario",
+            description = "Devuelve un objeto con mis datos y roles"
     )
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Inicio de Sesion con exito",
+            @ApiResponse(responseCode = "200", description = "Usuario devuelto con exito",
                     content = @Content(schema = @Schema(implementation = UserResponseDto.class))),
             @ApiResponse(responseCode = "400", description = "Cuerpo de la peticion invalida",
                     content = @Content(schema = @Schema(implementation = ProblemDetail.class))),
@@ -42,19 +44,20 @@ public class UserController {
             @ApiResponse(responseCode = "422", description = "Argumento no valido",
                     content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
     })
-
     @GetMapping("/me")
+    @SecurityRequirement(name = "Bearer Authentication")
     public ResponseEntity<UserResponseDto> getCurrentUser(@RequestHeader(name = "Authorization") String authorizationHeader) {
         String token = authorizationHeader.substring(7);
         UserResponseDto userResponseDto = userService.getMyUser(token);
         return ResponseEntity.ok(userResponseDto);
     }
+
     @Operation(
             summary = "Listar todos los usuarios",
             description = "Devuelve una lista de todos los usuarios registrados en el sistema. Advierte si no tenes el rol necesario."
     )
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Inicio de Sesion con exito",
+            @ApiResponse(responseCode = "200", description = "Listado de usuarios devuelto con exito",
                     content = @Content(schema = @Schema(implementation = UserResponseDto.class))),
             @ApiResponse(responseCode = "400", description = "Cuerpo de la peticion invalida",
                     content = @Content(schema = @Schema(implementation = ProblemDetail.class))),
@@ -67,14 +70,9 @@ public class UserController {
             @ApiResponse(responseCode = "422", description = "Argumento no valido",
                     content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
     })
-
     @GetMapping
     @PreAuthorize("hasRole('SUPER_USER')")
     public ResponseEntity<List<UserResponseDto>> getAllUsers() {
         return ResponseEntity.ok(userService.getAllUsers());
     }
-
-    //@SecurityRequirement(name = "Bearer Authentication")
-
-
 }
