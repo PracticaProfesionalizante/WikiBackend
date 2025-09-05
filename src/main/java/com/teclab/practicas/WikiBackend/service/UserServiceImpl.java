@@ -1,5 +1,6 @@
 package com.teclab.practicas.WikiBackend.service;
 
+import com.teclab.practicas.WikiBackend.config.JwtUtils;
 import com.teclab.practicas.WikiBackend.converter.auth.RegisterConverter;
 import com.teclab.practicas.WikiBackend.dto.auth.RegisterRequestDto;
 import com.teclab.practicas.WikiBackend.dto.auth.RegisterResponseDto;
@@ -11,6 +12,7 @@ import com.teclab.practicas.WikiBackend.repository.RolesRepository;
 import com.teclab.practicas.WikiBackend.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -25,16 +27,19 @@ public class UserServiceImpl implements UserService {
     private final RolesRepository rolesRepository;
     private final RegisterConverter registerConverter;
     private final PasswordEncoder passwordEncoder;
+    private final JwtUtils jwtUtils;
 
     // Inyección de dependencias
     public UserServiceImpl(
             UserRepository userRepository,
             RolesRepository rolesRepository,
             RegisterConverter registerConverter,
+            JwtUtils jwtUtils,
             PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
         this.rolesRepository = rolesRepository;
         this.registerConverter = registerConverter;
+        this.jwtUtils = jwtUtils;
         this.passwordEncoder = passwordEncoder;
     }
 
@@ -78,10 +83,13 @@ public class UserServiceImpl implements UserService {
                     .map(this::toUserResponseDto)
                     .collect(Collectors.toList());
         }
-        @Override
-        public UserResponseDto getMyUser() {
-        return userRepository.findById().stream()
-                .map(this::toUserResponseDto)
+    @Override
+    public UserResponseDto getMyUser(String token) {
+        String email = jwtUtils.getUsername(token);
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException("No se encontró ningún usuario con ese email"));
+
+        return toUserResponseDto(user);
     }
 
         private UserResponseDto toUserResponseDto(User user) {

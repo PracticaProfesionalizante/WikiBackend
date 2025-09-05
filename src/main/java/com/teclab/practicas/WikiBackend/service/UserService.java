@@ -11,7 +11,7 @@ public interface UserService {
 
     public List<UserResponseDto> getAllUsers();
 
-    public UserResponseDto getMyUser();
+    public UserResponseDto getMyUser(String token);
 
 
 }
