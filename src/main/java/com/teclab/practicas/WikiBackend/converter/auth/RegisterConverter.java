@@ -11,15 +11,16 @@ import java.util.stream.Collectors;
 public class RegisterConverter {
 
     public User toEntity(RegisterRequestDto dto) {
-        if (dto == null) {
-            return null;
-        }
+        if (dto == null) return null;
+        if (dto.getUsername() == null || dto.getUsername().isEmpty())  return null;
+        if (dto.getEmail() == null || dto.getEmail().isEmpty())  return null;
+        if (dto.getPassword() == null || dto.getPassword().isEmpty())  return null;
+        if (dto.getRoles() == null || dto.getRoles().isEmpty())  return null;
 
         User user = new User();
         user.setUsername(dto.getUsername());
-        user.setEmail(dto.getEmail());
-        user.setEnabled(true);
-        
+        user.setEmail(dto.getEmail().toLowerCase());
+
         return user;
     }
 
