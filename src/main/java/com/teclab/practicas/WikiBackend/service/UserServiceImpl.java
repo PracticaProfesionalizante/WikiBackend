@@ -57,40 +57,39 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     public RegisterResponseDto createUser(RegisterRequestDto userDto) {
-        System.out.println("createUser before userExist: "
-                + userDto.getUsername() + " / "
-                + userDto.getEmail() + " / "
-                + userDto.getPassword() + " / "
-                + userDto.getRoles().toString()
-        );
-        userExists(userDto.getEmail());
-        System.out.println("createUser after userExist: ");
+        try {
+            User newUser = registerConverter.toEntity(userDto);
 
-        User newUser = registerConverter.toEntity(userDto);
-        System.out.println("createUser after toEntity: ");
+            if (newUser == null) throw new IllegalArgumentException("Body Corrupto");
 
-        newUser.setPassword(passwordEncoder.encode(userDto.getPassword()));
-        System.out.println("createUser after encode: ");
+            userExists(newUser);
 
-        newUser.setRoles(getRoles(userDto.getRoles()));
-        System.out.println("createUser after getRoles: ");
+            newUser.setPassword(passwordEncoder.encode(userDto.getPassword()));
 
-        User userCreated = userRepository.save(newUser);
-        System.out.println("createUser after save: ");
+            newUser.setRoles(getRoles(userDto.getRoles()));
 
-        return registerConverter.toDto(userCreated);
+            User userCreated = userRepository.save(newUser);
+
+            return registerConverter.toDto(userCreated);
+        } catch (Exception e) {
+            System.out.println("createUser" + e);
+            throw e;
+        }
     }
 
-    private void userExists(String email) {
-        System.out.println("userExists before repo: " + email);
-        boolean existingUser = userRepository.existsByEmail(email);
-        System.out.println("userExists after repo: " + existingUser);
+    @Transactional
+    private void userExists(User user) {
+        boolean userByEmail = userRepository.existsByEmail(user.getEmail());
 
-        if (existingUser) {
-            System.out.println("existingUser.isPresent()");
-            throw new EmailIsExistente("El email " + email + " ya está registrado.");
+        if (userByEmail) {
+            throw new EmailIsExistente("El email " + user.getEmail() + " ya está registrado.");
         }
-        System.out.println("userExists after if: " + existingUser);
+
+        boolean userByUsername = userRepository.existsByUsername(user.getUsername());
+
+        if (userByUsername) {
+            throw new EmailIsExistente("El username " + user.getUsername() + " ya está registrado.");
+        }
     }
 
     @Transactional
@@ -107,34 +106,44 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     public LoginResponseDto loginUser(LoginRequestDto request) {
-        System.out.println("Login attempt: " + request.getEmail() + " / " + request.getPassword());
+        try {
 
-        Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword())
-        );
-        UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+            Authentication authentication = authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword())
+            );
 
-        String jwt = jwtUtils.generateAccessToken(userDetails);
+            final UserDetails userDetails = userDetailServiceImpl.loadUserByUsername(request.getEmail());
 
-        LoginResponseDto response = new LoginResponseDto();
-        response.setAccessToken(jwt);
+            String jwt = jwtUtils.generateAccessToken(userDetails);
 
-        return response;
+            LoginResponseDto response = new LoginResponseDto();
+            response.setAccessToken(jwt);
+
+            return response;
+
+        } catch (RuntimeException e) {
+            System.out.println("loginUser " + e);
+            throw new RuntimeException(e);
+        }
     }
 
     @Override
     public RefreshResponseDto refreshToken(String jwt) {
+        try {
+            String email = jwtUtils.getUsername(jwt);
 
-        String email = jwtUtils.getUsername(jwt);
+            UserDetails userDetails = userDetailServiceImpl.loadUserByUsername(email);
 
-        UserDetails userDetails = userDetailServiceImpl.loadUserByUsername(email);
+            String newJwt = jwtUtils.generateRefreshToken(userDetails);
 
-        String newJwt = jwtUtils.generateRefreshToken(userDetails);
+            RefreshResponseDto response = new RefreshResponseDto();
+            response.setRefreshToken(newJwt);
 
-        RefreshResponseDto response = new RefreshResponseDto();
-        response.setRefreshToken(newJwt);
-
-        return response;
+            return response;
+        } catch (Exception e) {
+            System.out.println("refreshToken" + e);
+            throw new RuntimeException(e);
+        }
     }
 
 
