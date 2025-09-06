@@ -1,6 +1,5 @@
 package com.teclab.practicas.WikiBackend.config;
 
-import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
@@ -53,7 +52,6 @@ public class JwtUtils {
         String roles = userDetails.getAuthorities().stream()
                 .map(GrantedAuthority::getAuthority)
                 .collect(Collectors.joining(","));
-        System.out.println("roles " + roles);
 
         return Jwts.builder()
                 .setSubject(userDetails.getUsername())
@@ -65,15 +63,8 @@ public class JwtUtils {
     }
 
     public boolean validateJwtToken(String token) {
-        try {
-            Jwts.parser()
-                    .setSigningKey(key())
-                    .build()
-                    .parseClaimsJws(token);
-            return true; //Si no se genera una excepcion, el token es valido//
-        } catch (JwtException e) {
-            return false; //Si hay excepcion, el token es invalido//
-        }
+        Jwts.parser().setSigningKey(key()).build().parseClaimsJws(token);
+        return true;
     }
 
     public String parseJwt(HttpServletRequest request) {
