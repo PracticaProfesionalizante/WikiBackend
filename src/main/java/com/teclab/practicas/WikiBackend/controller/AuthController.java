@@ -59,6 +59,8 @@ public class AuthController {
                     content = @Content(schema = @Schema(implementation = ProblemDetail.class))),
             @ApiResponse(responseCode = "401", description = "Usuario sin loguearse",
                     content = @Content(schema = @Schema(implementation = AuthEntryPointJwt.class))),
+            @ApiResponse(responseCode = "409", description = "Usuario Existente",
+                    content = @Content(schema = @Schema(implementation = ProblemDetail.class))),
             @ApiResponse(responseCode = "422", description = "Argumento no valido",
                     content = @Content(schema = @Schema(implementation = ProblemDetail.class))),
             @ApiResponse(responseCode = "500", description = "Error del cliente",
@@ -68,14 +70,7 @@ public class AuthController {
     @PreAuthorize("hasRole('ROLE_SUPER_USER')")
     @SecurityRequirement(name = "Bearer Authentication")
     public ResponseEntity<RegisterResponseDto> registerUser(@Valid @RequestBody RegisterRequestDto newUserDto) {
-        System.out.println("registerUser: "
-                + newUserDto.getUsername() + " / "
-                + newUserDto.getEmail() + " / "
-                + newUserDto.getPassword() + " / "
-                + newUserDto.getRoles().toString()
-        );
         RegisterResponseDto response = userService.createUser(newUserDto);
-        System.out.println("response: " + response);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
 
