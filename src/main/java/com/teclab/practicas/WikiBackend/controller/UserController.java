@@ -3,6 +3,7 @@ package com.teclab.practicas.WikiBackend.controller;
 import com.teclab.practicas.WikiBackend.dto.user.UserResponseDto;
 import com.teclab.practicas.WikiBackend.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -58,7 +59,7 @@ public class UserController {
     )
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Listado de usuarios devuelto con exito",
-                    content = @Content(schema = @Schema(implementation = UserResponseDto.class))),
+                    content = @Content(array = @ArraySchema(schema = @Schema(implementation = UserResponseDto.class)))),
             @ApiResponse(responseCode = "400", description = "Cuerpo de la peticion invalida",
                     content = @Content(schema = @Schema(implementation = ProblemDetail.class))),
             @ApiResponse(responseCode = "401", description = "No autorizado: Token JWT no proporcionado o inválido",
