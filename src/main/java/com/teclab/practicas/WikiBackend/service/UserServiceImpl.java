@@ -84,12 +84,6 @@ public class UserServiceImpl implements UserService {
         if (userByEmail) {
             throw new EmailIsExistente("El email " + user.getEmail() + " ya está registrado.");
         }
-
-        boolean userByUsername = userRepository.existsByUsername(user.getUsername());
-
-        if (userByUsername) {
-            throw new EmailIsExistente("El username " + user.getUsername() + " ya está registrado.");
-        }
     }
 
     @Transactional
