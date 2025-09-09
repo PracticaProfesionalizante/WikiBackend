@@ -106,18 +106,16 @@ public class UserServiceImpl implements UserService {
                     new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword())
             );
 
-            final UserDetails userDetails = userDetailServiceImpl.loadUserByUsername(request.getEmail());
-
-            String jwt = jwtUtils.generateAccessToken(userDetails);
+            String jwt = jwtUtils.generateAccessToken(authentication);
 
             LoginResponseDto response = new LoginResponseDto();
             response.setAccessToken(jwt);
 
             return response;
 
-        } catch (RuntimeException e) {
+        } catch (Exception e) {
             System.out.println("loginUser " + e);
-            throw new RuntimeException(e);
+            throw e;
         }
     }
 
