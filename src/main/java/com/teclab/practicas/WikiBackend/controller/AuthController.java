@@ -1,6 +1,5 @@
 package com.teclab.practicas.WikiBackend.controller;
 
-import com.teclab.practicas.WikiBackend.config.AuthEntryPointJwt;
 import com.teclab.practicas.WikiBackend.dto.auth.*;
 import com.teclab.practicas.WikiBackend.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -58,7 +57,7 @@ public class AuthController {
             @ApiResponse(responseCode = "400", description = "Cuerpo de la peticion invalida",
                     content = @Content(schema = @Schema(implementation = ProblemDetail.class))),
             @ApiResponse(responseCode = "401", description = "Usuario sin loguearse",
-                    content = @Content(schema = @Schema(implementation = AuthEntryPointJwt.class))),
+                    content = @Content(schema = @Schema(implementation = ProblemDetail.class))),
             @ApiResponse(responseCode = "409", description = "Usuario Existente",
                     content = @Content(schema = @Schema(implementation = ProblemDetail.class))),
             @ApiResponse(responseCode = "422", description = "Argumento no valido",
@@ -82,7 +81,9 @@ public class AuthController {
     )
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Token actualizado con exito",
-                    content = @Content(schema = @Schema(implementation = RegisterResponseDto.class))),
+                    content = @Content(schema = @Schema(implementation = RefreshResponseDto.class))),
+            @ApiResponse(responseCode = "401", description = "Usuario sin loguearse",
+                    content = @Content(schema = @Schema(implementation = ProblemDetail.class))),
             @ApiResponse(responseCode = "500", description = "Error del cliente",
                     content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
     })
