@@ -31,7 +31,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-class UserServiceTest {
+class UserServiceAuthTest {
 
     @Mock
     UserRepository userRepository;
@@ -183,7 +183,7 @@ class UserServiceTest {
         verify(jwtUtils, never()).generateAccessToken(any());
     }
 
-    //LOGIN
+    //REFRESH TOKEN
     @Test
     void testRefreshToken_shouldReturnNewJwt() {
         // GIVEN
