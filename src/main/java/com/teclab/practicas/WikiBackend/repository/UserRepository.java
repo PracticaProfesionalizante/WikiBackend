@@ -8,13 +8,13 @@ import java.util.Optional;
 
 public interface UserRepository extends JpaRepository<User, Long> {
 
-    // Método para buscar un usuario por su nombre de usuario
+    // Metodo para buscar un usuario por su nombre de usuario
     @EntityGraph(attributePaths = "roles")
     Optional<User> findByEmail(String email);
 
-    // Método para verificar si un nombre de usuario ya existe
+    // Metodo para verificar si un nombre de usuario ya existe
     boolean existsByUsername(String username);
 
-    // Método para verificar si un email ya existe
+    // Metodo para verificar si un email ya existe
     boolean existsByEmail(String email);
 }
