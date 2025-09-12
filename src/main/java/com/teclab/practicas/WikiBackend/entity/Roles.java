@@ -26,6 +26,8 @@ public class Roles {
     @ManyToMany(mappedBy = "roles") // Indica que la relación es gestionada por la entidad `User`
     private Set<User> users = new HashSet<>();
 
+    @ManyToMany(mappedBy = "roles")
+    private Set<MenuItem> menuItems = new HashSet<>();
 
     public enum RoleName {
         ROLE_SUPER_USER,
