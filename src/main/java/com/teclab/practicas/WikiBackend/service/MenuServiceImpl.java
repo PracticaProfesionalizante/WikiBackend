@@ -60,7 +60,6 @@ public class MenuServiceImpl implements MenuService {
             throw e;
         }
     }
-    @Transactional
     private MenuItem setParent(Long parentId){
         if (parentId != null) {
             MenuItem parent = menuItemRepository.findById(parentId)
@@ -69,7 +68,6 @@ public class MenuServiceImpl implements MenuService {
         }
         return null;
     }
-    @Transactional
     private Set<Roles> setRoles(List<String> rolesName){
         return rolesName.stream()
                 .map(roleName -> rolesRepository.findByName(Roles.RoleName.valueOf(roleName))
@@ -79,40 +77,56 @@ public class MenuServiceImpl implements MenuService {
 
     @Transactional()
     public MenuItemResponseDto editMenuItem(Long id, MenuItemRequestDto request) {
-        try {
-            if (id == null) throw new IllegalArgumentException("No se identifica el item");
 
-            MenuItem item = menuItemRepository.findById(id)
-                    .orElseThrow(() -> new EntityNotFoundException("No se encuentra item con el id: " + id));
+        MenuItem menuItem = menuItemRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("No se encontró MenuItem con el id: " + id));
 
-            MenuItem newItem = setNewItem(request, item);
+        Integer oldOrder = menuItem.getOrder();
+        Integer newOrder = request.getOrder();
 
-            return menuItemRepository.save(menuItem);
-
-            return MenuItemResponseDto.toDto(menuItemRepository.save(newItem));
-        } catch (Exception e) {
-            System.out.println("MenuService / getDynamicMenuByRoles - " + e.getMessage());
-            throw e;
+        Long menuItemParentId = (menuItem.getParent() != null) ? menuItem.getParent().getId() : null;
+        Long requestParentId = request.getParentId();
+        if (menuItemParentId == null && requestParentId != null ||
+                menuItemParentId != null && requestParentId == null ||
+                (menuItemParentId != null && requestParentId != null && !menuItemParentId.equals(requestParentId))) {
+            menuItemRepository.adjustOrderOnDelete(menuItem.getParent().getId(), oldOrder);
+            menuItemRepository.adjustOrderOnChangeParent(request.getParentId(), newOrder);
+            menuItem.setParent(setParent(requestParentId));
+        } else if (newOrder != null && !newOrder.equals(oldOrder)) {
+            adjustItemOrder(menuItem.getParent().getId(), oldOrder, newOrder);
+            menuItem.setOrder(newOrder);
         }
-    }
-    private MenuItem setNewItem (MenuItemRequestDto dto, MenuItem item){
-        if(request.getId() != null) item.setId(request.getId());
-        if(request.getName() != null) item.setName(request.getName());
-        if(request.getPath() != null) item.setPath(request.getPath());
-        if(request.getIcon() != null) item.setIcon(request.getIcon());
-        if(request.getOrder() != null) item.setOrder(request.getOrder());
-        if(request.getParent() != null) item.setParent(setParent(request.getParentId()));
-        if(request.getRoles() != null) item.setRoles(setRoles(request.getRoles()));
 
-        return item;
+        if (request.getName() != null) menuItem.setName(request.getName());
+        if (request.getPath() != null) menuItem.setPath(request.getPath());
+        if (request.getIcon() != null) menuItem.setIcon(request.getIcon());
+        if (request.getRoles() != null) menuItem.setRoles(setRoles(request.getRoles()));
+
+        return MenuItemResponseDto.toDto(menuItemRepository.save(menuItem));
+    }
+    private void adjustItemOrder(Long parentId, Integer oldOrder, Integer newOrder) {
+        if (oldOrder < newOrder) {
+            menuItemRepository.decreaseOrder(parentId, oldOrder + 1, newOrder);
+        } else if (oldOrder > newOrder) {
+            menuItemRepository.increaseOrder(parentId, newOrder, oldOrder - 1);
+        }
     }
 
     @Transactional()
     public void deleteMenuItem(Long id) {
         try {
-            if (id == null) throw new IllegalArgumentException("No se identifica el item");
+            MenuItem menuItem = menuItemRepository.findById(id)
+                    .orElseThrow(() -> new EntityNotFoundException("No se encontró MenuItem con el id: " + id));
 
-            menuItemRepository.deleteById(id);
+            // Obtener el orden del ítem que se va a eliminar
+            Integer orderToDelete = menuItem.getOrder();
+
+            // 1. Eliminar el ítem
+            menuItemRepository.delete(menuItem);
+
+            // 2. Reajustar el orden de los demás ítems
+            // Se llama al metodo para decrementar el orden de todos los ítems que le seguían.
+            menuItemRepository.adjustOrderOnDelete(menuItem.getParent().getId(), orderToDelete);
         } catch (Exception e) {
             System.out.println("MenuService / getDynamicMenuByRoles - " + e.getMessage());
             throw e;
