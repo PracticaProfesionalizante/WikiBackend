@@ -1,5 +1,6 @@
 package com.teclab.practicas.WikiBackend.exception;
 
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
@@ -90,6 +91,15 @@ public class ApiExceptionHandler {
     public ProblemDetail handleIllegalArgumentException(IllegalArgumentException ex, HttpServletRequest req) {
         ProblemDetail pd = ProblemDetail.forStatus(HttpStatus.UNPROCESSABLE_ENTITY);
         pd.setTitle("Argumento Invalido");
+        pd.setDetail(ex.getMessage());
+        pd.setProperty("path", req.getRequestURI());
+        return pd;
+    }
+
+    @ExceptionHandler(EntityNotFoundException.class)
+    public ProblemDetail handleIllegalArgumentException(EntityNotFoundException ex, HttpServletRequest req) {
+        ProblemDetail pd = ProblemDetail.forStatus(HttpStatus.UNPROCESSABLE_ENTITY);
+        pd.setTitle("Database Error");
         pd.setDetail(ex.getMessage());
         pd.setProperty("path", req.getRequestURI());
         return pd;
