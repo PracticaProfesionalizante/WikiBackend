@@ -1,5 +1,6 @@
 package com.teclab.practicas.WikiBackend.config;
 
+import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
@@ -14,7 +15,10 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
 import java.security.Key;
+import java.util.Arrays;
 import java.util.Date;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Component
@@ -64,8 +68,16 @@ public class JwtUtils {
                 .compact();
     }
 
+    public Claims parseJwtClaims(String token) {
+        return Jwts.parser()
+                .setSigningKey(key())
+                .build()
+                .parseClaimsJws(token)
+                .getBody();
+    }
+
     public boolean validateJwtToken(String token) {
-        Jwts.parser().setSigningKey(key()).build().parseClaimsJws(token);
+        parseJwtClaims(token);
         return true;
     }
 
@@ -80,12 +92,19 @@ public class JwtUtils {
     }
 
     public String getUsername(String token) {
-        return Jwts.parser()
-                .setSigningKey(key())
-                .build()
-                .parseClaimsJws(token)
-                .getBody()
-                .getSubject();
+        return parseJwtClaims(token).getSubject();
+    }
+
+    // Nuevo método para extraer los roles
+    public Set<String> getRolesFromToken(String token) {
+        Claims claims = parseJwtClaims(token);
+        String rolesString = claims.get("roles", String.class);
+        if (rolesString != null && !rolesString.isEmpty()) {
+            return Arrays.stream(rolesString.split(","))
+                    .map(String::trim)
+                    .collect(Collectors.toSet());
+        }
+        return new HashSet<>();
     }
 
 
