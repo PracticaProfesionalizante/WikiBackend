@@ -24,19 +24,6 @@ public interface MenuItemRepository extends JpaRepository<MenuItem, Long> {
     List<MenuItem> findMainMenusByRoles(Set<String> roleNames);
 
 
-    @Modifying
-    @Query("UPDATE menu_items m SET m.order = m.order - 1 WHERE m.parent IS NULL AND m.order > :order")
-    void adjustOrderOnDeleteForMainItems(@Param("order") Integer order);
-
-    @Modifying
-    @Query("UPDATE menu_items m SET m.order = m.order + 1 WHERE m.parent IS NULL AND m.order > :order")
-    void adjustOrderOnChangeParentForMainItems(@Param("order") Integer order);
-
-    @Query("SELECT MAX(m.order) FROM menu_items m WHERE m.parent IS NULL ")
-    Optional<Integer> findMaxOrderByParentIdForMainItems();
-
-
-
     //(m.parent.id = :parentId OR (:parentId IS NULL AND m.parent IS NULL))
     @Modifying
     @Query("UPDATE menu_items m SET m.order = m.order + 1 WHERE (m.parent.id = :parentId OR (:parentId IS NULL AND m.parent IS NULL)) AND m.order >= :start AND m.order <= :end")
@@ -47,13 +34,13 @@ public interface MenuItemRepository extends JpaRepository<MenuItem, Long> {
     void decreaseOrder(@Param("parentId") Long parentId, @Param("start") Integer start, @Param("end") Integer end);
 
     @Modifying
-    @Query("UPDATE menu_items m SET m.order = m.order - 1 WHERE m.parent.id = :parentId AND m.order > :order")
+    @Query("UPDATE menu_items m SET m.order = m.order - 1 WHERE (m.parent.id = :parentId OR (:parentId IS NULL AND m.parent IS NULL)) AND m.order > :order")
     void adjustOrderOnDeleteForParentedItems(@Param("parentId") Long parentId, @Param("order") Integer order);
 
     @Modifying
-    @Query("UPDATE menu_items m SET m.order = m.order + 1 WHERE m.parent = :parentId AND m.order > :order")
+    @Query("UPDATE menu_items m SET m.order = m.order + 1 WHERE (m.parent.id = :parentId OR (:parentId IS NULL AND m.parent IS NULL)) AND m.order >= :order")
     void adjustOrderOnChangeParent(@Param("parentId") Long parentId, @Param("order") Integer order);
 
-    @Query("SELECT MAX(m.order) FROM menu_items m WHERE m.parent.id = :parentId")
+    @Query("SELECT MAX(m.order) FROM menu_items m WHERE (m.parent.id = :parentId OR (:parentId IS NULL AND m.parent IS NULL))")
     Optional<Integer> findMaxOrderByParentId(@Param("parentId") Long parentId);
 }

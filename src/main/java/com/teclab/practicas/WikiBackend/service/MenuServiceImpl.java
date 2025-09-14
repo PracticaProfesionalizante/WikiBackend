@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -88,33 +89,23 @@ public class MenuServiceImpl implements MenuService {
         Integer oldOrder = menuItem.getOrder();
         Integer newOrder = request.getOrder();
 
-//        if (!Objects.equals(oldParentId, newParentId)){
-//            if (menuItem.getParent() != null) {
-//                menuItemRepository.adjustOrderOnDeleteForParentedItems(oldParentId, oldOrder);
-//            } else {
-//                menuItemRepository.adjustOrderOnDeleteForMainItems(oldOrder);
-//            }
-//            if (newParentId != null) {
-//                int orderMax = menuItemRepository.findMaxOrderByParentId(newParentId).orElse(1);
-//                if (newOrder == null || newOrder > orderMax + 1 || newOrder <= 0){
-//                    newOrder = orderMax + 1;
-//                } else {
-//                    menuItemRepository.adjustOrderOnChangeParent(newParentId, newOrder);
-//                }
-//            } else {
-//                int orderMax = menuItemRepository.findMaxOrderByParentIdForMainItems().orElse(1);
-//                if (newOrder == null || newOrder > orderMax + 1 || newOrder <= 0){
-//                    newOrder = orderMax + 1;
-//                } else {
-//                    menuItemRepository.adjustOrderOnChangeParentForMainItems(newOrder);
-//                }
-//            }
-//        } else {
+        if (!Objects.equals(oldParentId, newParentId)){
+            System.out.println("Adentro del if: oldParentId - " + oldParentId + "\t newParentId - " + newParentId);
+            menuItemRepository.adjustOrderOnDeleteForParentedItems(oldParentId, oldOrder);
+
+            Integer beforeValidate = newOrder;
             newOrder = getOrderValid(newParentId, newOrder);
-            System.out.println("newOrder: " + newOrder);
+
+            if (!Objects.equals(beforeValidate, newOrder)) newOrder++;
+
+            menuItemRepository.adjustOrderOnChangeParent(newParentId, newOrder);
+        } else {
+            System.out.println("Adentro del else: oldParentId - " + oldParentId + "\t newParentId - " + newParentId);
+            newOrder = getOrderValid(newParentId, newOrder);
             if (!newOrder.equals(oldOrder)) adjustItemOrder(newParentId, oldOrder, newOrder);
-            menuItem.setOrder(newOrder);
-//        }
+
+        }
+        menuItem.setOrder(newOrder);
 
         menuItem.setParent(setParent(newParentId));
 
@@ -145,19 +136,13 @@ public class MenuServiceImpl implements MenuService {
             // 1. Eliminar el ítem. JpaRepository se encarga de esto de forma segura.
             menuItemRepository.deleteById(id);
 
-            // Reajustar el orden de los hermanos
-            if (menuItem.getParent() != null) {
-                menuItemRepository.adjustOrderOnDeleteForParentedItems(menuItem.getParent().getId(), orderToDelete);
-            } else {
-                // El ítem es un menú principal
-                menuItemRepository.adjustOrderOnDeleteForMainItems(orderToDelete);
-            }
+            menuItemRepository.adjustOrderOnDeleteForParentedItems(menuItem.getParent().getId(), orderToDelete);
+
         } catch (Exception e) {
             System.out.println("MenuService / getDynamicMenuByRoles - " + e.getMessage());
             throw e;
         }
     }
-
 
     private Integer getOrderValid(Long parentId, Integer order){
         int maxOrder = getMaxOrder(parentId);
@@ -165,11 +150,7 @@ public class MenuServiceImpl implements MenuService {
         else return maxOrder;
     }
     private int getMaxOrder(Long parentId){
-        if(parentId != null){
-            return menuItemRepository.findMaxOrderByParentId(parentId).orElse(1);
-        } else {
-            return menuItemRepository.findMaxOrderByParentIdForMainItems().orElse(1);
-        }
+        return menuItemRepository.findMaxOrderByParentId(parentId).orElse(1);
     }
     private void adjustItemOrder(Long parentId, Integer oldOrder, Integer newOrder) {
         if (oldOrder < newOrder) {
@@ -178,6 +159,7 @@ public class MenuServiceImpl implements MenuService {
             menuItemRepository.increaseOrder(parentId, newOrder, oldOrder - 1);
         }
     }
+
     private MenuItem setParent(Long parentId){
         if (parentId != null) {
             return menuItemRepository.findById(parentId)
