@@ -11,14 +11,11 @@ import java.util.List;
 @AllArgsConstructor
 
 public class MenuItemResponseDto {
-
         private Long id;
         private String name;
         private String path;
         private String icon;
-        private Integer displayOrder;
+        private Integer Order;
         private List<MenuItemResponseDto> children;     // Para la jerarquía de submenús
-        private Long parent; 
-        
-        
+        private Long parentId;
 }

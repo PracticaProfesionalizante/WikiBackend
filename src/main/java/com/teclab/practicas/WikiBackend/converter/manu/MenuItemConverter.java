@@ -1,5 +1,7 @@
 package com.teclab.practicas.WikiBackend.converter.manu;
 
+import com.teclab.practicas.WikiBackend.dto.menu.MenuItemRequestDto;
+import com.teclab.practicas.WikiBackend.dto.menu.MenuItemResponseDto;
 import com.teclab.practicas.WikiBackend.entity.MenuItem;
 import org.springframework.stereotype.Component;
 
@@ -23,17 +25,23 @@ public class MenuItemConverter {
     }
 
     public MenuItem toEntity(MenuItemRequestDto dto) {
-        if (dto == null) return null;
-        if (dto.getName() == null || dto.getUsername().isEmpty())  return null;
-        if (dto.getPath() == null || dto.getPath().isEmpty())  return null;
-        if (dto.getIcon() == null || dto.getIcon().isEmpty())  return null;
-        if (dto.getOrder() == null || dto.getOrder() != 0)  return null;
+        if (dto == null) throw new IllegalArgumentException("La request no puede ser vacia");
+        System.out.println("dto - " + dto);
+
+        if (dto.getName() == null || dto.getName().isBlank())   throw new IllegalArgumentException("Falta el campo Name");
+        System.out.println("dto.getName() - " + dto.getName());
+
+        if (dto.getPath() == null || dto.getPath().isBlank())   throw new IllegalArgumentException("Falta el campo Path");
+        System.out.println("dto.getPath() - " + dto.getPath());
+
+        if (dto.getIcon() == null || dto.getIcon().isBlank())   throw new IllegalArgumentException("Falta el campo Icon");
+        System.out.println("dto.getIcon() - " + dto.getIcon());
+
 
         MenuItem item = new MenuItem();
         item.setName(dto.getName());
         item.setPath(dto.getPath());
         item.setIcon(dto.getIcon());
-        item.setOrder(dto.getOrder());
 
         return item;
     }
@@ -43,22 +51,23 @@ public class MenuItemConverter {
             return null;
         }
 
-        MenuItemResponseDto item = new MenuItemResponseDto();
-        item.getId(menuItem.getId());
-        item.setName(menuItem.getName());
-        item.setPath(menuItem.getPath());
-        item.setIcon(menuItem.getIcon());
-        item.setOrder(menuItem.getOrder());
-        item.setParent(menuItem.getParent());
-        item.getChildren(menuItem.getChildren());
+        MenuItemResponseDto dto = new MenuItemResponseDto();
+        dto.setId(menuItem.getId());
+        dto.setName(menuItem.getName());
+        dto.setPath(menuItem.getPath());
+        dto.setIcon(menuItem.getIcon());
+        dto.setOrder(menuItem.getOrder());
 
-        // Mapeamos el Set<Roles> a un Set<String> con los nombres de los roles
-        if (menuItem.getRoles() != null) {
-            item.setRoles(menuItem.getRoles().stream()
-                    .map(role -> role.getName().name())
-                    .collect(Collectors.toSet()));
+        // Asignar el parentId de forma segura
+        dto.setParentId((menuItem.getParent() != null) ? menuItem.getParent().getId() : null);
+
+        // Mapear recursivamente los hijos a DTOs
+        if (menuItem.getChildren() != null && !menuItem.getChildren().isEmpty()) {
+            dto.setChildren(menuItem.getChildren().stream()
+                    .map(this::toDto) // Mapeo recursivo
+                    .collect(Collectors.toList()));
         }
 
-        return item;
+        return dto;
     }
 }

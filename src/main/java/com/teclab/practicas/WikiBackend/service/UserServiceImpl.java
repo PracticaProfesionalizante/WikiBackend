@@ -103,7 +103,7 @@ public class UserServiceImpl implements UserService {
         try {
 
             Authentication authentication = authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword())
+                    new UsernamePasswordAuthenticationToken(request.getEmail().toLowerCase(), request.getPassword())
             );
 
             String jwt = jwtUtils.generateAccessToken(authentication);

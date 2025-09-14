@@ -50,7 +50,7 @@ public class UserServiceTest {
         testUser1.setCreatedAt(LocalDateTime.now().minusDays(5));
         testUser1.setUpdatedAt(LocalDateTime.now().minusDays(1));
         testUser1.setPassword("contraseña1");
-        testUser1.setRoles(new HashSet<>(Arrays.asList(new Roles(1L, Roles.RoleName.ROLE_COLLABORATOR, null))));
+        testUser1.setRoles(new HashSet<>(List.of(new Roles(1L, Roles.RoleName.ROLE_COLLABORATOR, null, null))));
 
         testUser2 = new User();
         testUser2.setId(2L);
@@ -60,7 +60,7 @@ public class UserServiceTest {
         testUser2.setCreatedAt(LocalDateTime.now().minusDays(10));
         testUser2.setUpdatedAt(LocalDateTime.now().minusDays(2));
         testUser2.setPassword("contraseña2");
-        testUser2.setRoles(new HashSet<>(Arrays.asList(new Roles(2L, Roles.RoleName.ROLE_SUPER_USER, null))));
+        testUser2.setRoles(new HashSet<>(Arrays.asList(new Roles(2L, Roles.RoleName.ROLE_SUPER_USER, null, null))));
     }
 
     @Test
@@ -75,9 +75,9 @@ public class UserServiceTest {
         assertNotNull(result);
         assertEquals(2, result.size());
         assertEquals("testuser1", result.get(0).getUsername());
-        assertTrue(result.get(0).getRoles().contains("ROLE_COLLABORATOR"));
+        assertTrue(result.get(0).getRoles().contains("COLLABORATOR"));
         assertEquals("testuser2", result.get(1).getUsername());
-        assertTrue(result.get(1).getRoles().contains("ROLE_SUPER_USER"));
+        assertTrue(result.get(1).getRoles().contains("SUPER_USER"));
 
         // Verificar que el metodo del repositorio fue llamado
         verify(userRepository, times(1)).findAll();
@@ -96,7 +96,7 @@ public class UserServiceTest {
         assertNotNull(result);
         assertEquals("testuser1", result.getUsername());
         assertEquals("prueba1@gmail.com", result.getEmail());
-        assertTrue(result.getRoles().contains("ROLE_COLLABORATOR"));
+        assertTrue(result.getRoles().contains("COLLABORATOR"));
 
         // Verificar que el metodo del repositorio fue llamado
         verify(userRepository, times(1)).findByEmail(testUser1.getEmail());

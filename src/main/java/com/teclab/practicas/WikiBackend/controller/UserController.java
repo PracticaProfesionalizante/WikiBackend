@@ -72,7 +72,7 @@ public class UserController {
                     content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
     })
     @GetMapping
-    @PreAuthorize("hasRole('SUPER_USER')")
+    @PreAuthorize("hasRole('ROLE_SUPER_USER')")
     @SecurityRequirement(name = "Bearer Authentication")
     public ResponseEntity<List<UserResponseDto>> getAllUsers() {
         return ResponseEntity.ok(userService.getAllUsers());

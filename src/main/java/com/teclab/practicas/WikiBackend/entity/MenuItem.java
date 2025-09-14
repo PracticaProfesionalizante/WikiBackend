@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.util.List;
+import java.util.Set;
 
 @Entity(name = "menu_items")
 @Getter
@@ -42,5 +43,5 @@ public class MenuItem {
         joinColumns = @JoinColumn(name = "menu_item_id"),
         inverseJoinColumns = @JoinColumn(name = "role_id")
     )
-    private List<Roles> roles;
+    private Set<Roles> roles;
 }
