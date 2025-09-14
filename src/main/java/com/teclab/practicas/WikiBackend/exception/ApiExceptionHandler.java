@@ -6,6 +6,7 @@ import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -22,7 +23,7 @@ import java.util.stream.Collectors;
 @RestControllerAdvice // <- para JSON
 @Order(Ordered.HIGHEST_PRECEDENCE)
 public class ApiExceptionHandler {
-
+//    DataIntegrityViolationException
     @ExceptionHandler(MethodArgumentNotValidException.class) // @Valid en @RequestBody
     public ProblemDetail handleBodyValidation(MethodArgumentNotValidException ex, HttpServletRequest req) {
         Map<String, String> errors = ex.getBindingResult()
@@ -91,6 +92,24 @@ public class ApiExceptionHandler {
     public ProblemDetail handleIllegalArgumentException(IllegalArgumentException ex, HttpServletRequest req) {
         ProblemDetail pd = ProblemDetail.forStatus(HttpStatus.UNPROCESSABLE_ENTITY);
         pd.setTitle("Argumento Invalido");
+        pd.setDetail(ex.getMessage());
+        pd.setProperty("path", req.getRequestURI());
+        return pd;
+    }
+
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ProblemDetail handleDataIntegrityViolationException(DataIntegrityViolationException ex, HttpServletRequest req) {
+        ProblemDetail pd = ProblemDetail.forStatus(HttpStatus.UNPROCESSABLE_ENTITY);
+        pd.setTitle("Argumento Invalido");
+        pd.setDetail(ex.getLocalizedMessage());
+        pd.setProperty("path", req.getRequestURI());
+        return pd;
+    }
+
+    @ExceptionHandler(MenuPathExistente.class)
+    public ProblemDetail handleMenuPathExistente(MenuPathExistente ex, HttpServletRequest req) {
+        ProblemDetail pd = ProblemDetail.forStatus(HttpStatus.UNPROCESSABLE_ENTITY);
+        pd.setTitle("Path Duplicado");
         pd.setDetail(ex.getMessage());
         pd.setProperty("path", req.getRequestURI());
         return pd;
