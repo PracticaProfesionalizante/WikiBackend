@@ -75,9 +75,9 @@ public class UserServiceTest {
         assertNotNull(result);
         assertEquals(2, result.size());
         assertEquals("testuser1", result.get(0).getUsername());
-        assertTrue(result.get(0).getRoles().contains("COLLABORATOR"));
+        assertTrue(result.get(0).getRoles().contains("ROLE_COLLABORATOR"));
         assertEquals("testuser2", result.get(1).getUsername());
-        assertTrue(result.get(1).getRoles().contains("SUPER_USER"));
+        assertTrue(result.get(1).getRoles().contains("ROLE_SUPER_USER"));
 
         // Verificar que el metodo del repositorio fue llamado
         verify(userRepository, times(1)).findAll();
@@ -96,7 +96,7 @@ public class UserServiceTest {
         assertNotNull(result);
         assertEquals("testuser1", result.getUsername());
         assertEquals("prueba1@gmail.com", result.getEmail());
-        assertTrue(result.getRoles().contains("COLLABORATOR"));
+        assertTrue(result.getRoles().contains("ROLE_COLLABORATOR"));
 
         // Verificar que el metodo del repositorio fue llamado
         verify(userRepository, times(1)).findByEmail(testUser1.getEmail());
