@@ -125,7 +125,7 @@ public class MenuServiceImpl implements MenuService {
 
             // Si el ítem a eliminar tiene hijos, es mejor lanzar una excepción
             // para evitar eliminaciones accidentales de sub-árboles completos
-            if (!menuItem.getChildren().isEmpty()) {
+            if (menuItem.getChildren() != null && !menuItem.getChildren().isEmpty()) {
                 throw new IllegalStateException("No se puede eliminar un menú que tiene submenús asociados.");
             }
 
