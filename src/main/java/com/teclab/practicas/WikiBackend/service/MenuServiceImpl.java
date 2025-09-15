@@ -136,21 +136,22 @@ public class MenuServiceImpl implements MenuService {
             // 1. Eliminar el ítem. JpaRepository se encarga de esto de forma segura.
             menuItemRepository.deleteById(id);
 
-            menuItemRepository.adjustOrderOnDeleteForParentedItems(menuItem.getParent().getId(), orderToDelete);
+            menuItemRepository.adjustOrderOnDeleteForParentedItems(parentId, orderToDelete);
 
         } catch (Exception e) {
-            System.out.println("MenuService / getDynamicMenuByRoles - " + e.getMessage());
+            System.out.println("deleteMenuItem - " + e.getMessage());
             throw e;
         }
     }
 
     private Integer getOrderValid(Long parentId, Integer order){
         int maxOrder = getMaxOrder(parentId);
+        if (maxOrder == 0) return 0;
         if (order != null && order <= maxOrder && order > 0) return order;
         else return maxOrder;
     }
     private int getMaxOrder(Long parentId){
-        return menuItemRepository.findMaxOrderByParentId(parentId).orElse(1);
+        return menuItemRepository.findMaxOrderByParentId(parentId).orElse(0);
     }
     private void adjustItemOrder(Long parentId, Integer oldOrder, Integer newOrder) {
         if (oldOrder < newOrder) {
