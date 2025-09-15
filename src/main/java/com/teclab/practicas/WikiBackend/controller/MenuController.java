@@ -10,6 +10,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -25,11 +26,30 @@ import java.util.List;
 @RestController
 @RequestMapping("/menu")
 @Validated
+@Tag(name = "Gestión de Menú", description = "Menú lateral desplegable dinámico")
 public class MenuController {
 
     @Autowired
     private MenuService menuService;
 
+    @Operation(
+            summary = "Agregamos nuevo menú",
+            description = "Generamos un elemento nuevo en el menu"
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201", description = "Elemento agregado al menu con exito",
+                    content = @Content(schema = @Schema(implementation = RegisterResponseDto.class))),
+            @ApiResponse(responseCode = "400", description = "Cuerpo de la peticion invalida",
+                    content = @Content(schema = @Schema(implementation = ProblemDetail.class))),
+            @ApiResponse(responseCode = "401", description = "Usuario no autorizado",
+                    content = @Content(schema = @Schema(implementation = ProblemDetail.class))),
+            @ApiResponse(responseCode = "403", description = "Acceso denegado. Se requiere rol de SUPERUSER",
+                    content = @Content(schema = @Schema(implementation = ProblemDetail.class))),
+            @ApiResponse(responseCode = "422", description = "Argumento no valido",
+                    content = @Content(schema = @Schema(implementation = ProblemDetail.class))),
+            @ApiResponse(responseCode = "500", description = "Error del cliente",
+                    content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
+    })
     @PostMapping
     @PreAuthorize("hasRole('ROLE_SUPER_USER')")
     @SecurityRequirement(name = "Bearer Authentication")
@@ -40,18 +60,26 @@ public class MenuController {
         return ResponseEntity.status(HttpStatus.CREATED).body(responseDto);
     }
 
+
+
     @Operation(
-            summary = "Agregamos nuevo menu",
-            description = "Generamo un elemento nuevo en el menu"
+            summary = "Actualiza un ítem del menú",
+            description = "Permite cambiar el nombre y/o orden un elemento del menú. Solo para SuperUser."
     )
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Elemento agregado al menu con exito",
+            @ApiResponse(responseCode = "200", description = "Elemento del menu actualizado con exito",
                     content = @Content(schema = @Schema(implementation = RegisterResponseDto.class))),
             @ApiResponse(responseCode = "400", description = "Cuerpo de la peticion invalida",
-                    content = @Content(schema = @Schema(implementation = ProblemDetail.class)))  //401, 500,403, 422
+                    content = @Content(schema = @Schema(implementation = ProblemDetail.class))),
+            @ApiResponse(responseCode = "401", description = "Usuario no autorizado",
+                    content = @Content(schema = @Schema(implementation = ProblemDetail.class))),
+            @ApiResponse(responseCode = "403", description = "Acceso denegado. Se requiere rol de SUPERUSER",
+                    content = @Content(schema = @Schema(implementation = ProblemDetail.class))),
+            @ApiResponse(responseCode = "422", description = "Argumento no valido",
+                    content = @Content(schema = @Schema(implementation = ProblemDetail.class))),
+            @ApiResponse(responseCode = "500", description = "Error del cliente",
+                    content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
     })
-
-
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('ROLE_SUPER_USER')")
     @SecurityRequirement(name = "Bearer Authentication")
@@ -61,11 +89,23 @@ public class MenuController {
         return ResponseEntity.ok(responseDto);
     }
 
-    @Operation(
-            summary = "Actualiza un ítem del menú",
-            description = "Permite cambiar el nombre y/o orden un elemento del menú. Solo para SuperUser." //200,401, 500,403, 422
-    )
 
+    @Operation(
+            summary = "Elimina un ítem del menú",
+            description = "Elimina un elemento del menú por su ID. Solo para SuperUser."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "204", description = "Elemento eliminado del menu con exito",
+                    content = @Content(schema = @Schema())),
+            @ApiResponse(responseCode = "401", description = "Usuario no autorizado",
+                    content = @Content(schema = @Schema(implementation = ProblemDetail.class))),
+            @ApiResponse(responseCode = "403", description = "Acceso denegado. Se requiere rol de SUPERUSER",
+                    content = @Content(schema = @Schema(implementation = ProblemDetail.class))),
+            @ApiResponse(responseCode = "422", description = "Argumento no valido",
+                    content = @Content(schema = @Schema(implementation = ProblemDetail.class))),
+            @ApiResponse(responseCode = "500", description = "Error del cliente",
+                    content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
+    })
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ROLE_SUPER_USER')")
     @SecurityRequirement(name = "Bearer Authentication")
@@ -74,12 +114,12 @@ public class MenuController {
         return ResponseEntity.noContent().build();
     }
 
+
+
     @Operation(
-            summary = "Elimina un ítem del menú",
-            description = "Elimina un elemento del menú por su ID. Solo para SuperUser." //200,401, 500,403, 422
+            summary = "Obtener el menú",
+            description = "Visualiza todos los items del menú."
     )
-
-
     @GetMapping
     @SecurityRequirement(name = "Bearer Authentication")
     public ResponseEntity<List<MenuItemResponseDto>> getMenu(@RequestHeader(name = "Authorization") String authorizationHeader) {
