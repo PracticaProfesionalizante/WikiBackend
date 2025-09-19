@@ -56,7 +56,7 @@ public class AuthController {
                     content = @Content(schema = @Schema(implementation = RegisterResponseDto.class))),
             @ApiResponse(responseCode = "400", description = "Cuerpo de la peticion invalida",
                     content = @Content(schema = @Schema(implementation = ProblemDetail.class))),
-            @ApiResponse(responseCode = "401", description = "Usuario sin loguearse",
+            @ApiResponse(responseCode = "401", description = "Usuario no identificado",
                     content = @Content(schema = @Schema(implementation = ProblemDetail.class))),
             @ApiResponse(responseCode = "409", description = "Usuario Existente",
                     content = @Content(schema = @Schema(implementation = ProblemDetail.class))),
@@ -82,7 +82,7 @@ public class AuthController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Token actualizado con exito",
                     content = @Content(schema = @Schema(implementation = RefreshResponseDto.class))),
-            @ApiResponse(responseCode = "401", description = "Usuario sin loguearse",
+            @ApiResponse(responseCode = "401", description = "Usuario no identificado",
                     content = @Content(schema = @Schema(implementation = ProblemDetail.class))),
             @ApiResponse(responseCode = "500", description = "Error del cliente",
                     content = @Content(schema = @Schema(implementation = ProblemDetail.class)))

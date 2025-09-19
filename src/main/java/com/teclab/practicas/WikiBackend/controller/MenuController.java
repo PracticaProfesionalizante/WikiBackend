@@ -5,6 +5,7 @@ import com.teclab.practicas.WikiBackend.dto.menu.MenuItemRequestDto;
 import com.teclab.practicas.WikiBackend.dto.menu.MenuItemResponseDto;
 import com.teclab.practicas.WikiBackend.service.MenuService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -41,7 +42,7 @@ public class MenuController {
                     content = @Content(schema = @Schema(implementation = RegisterResponseDto.class))),
             @ApiResponse(responseCode = "400", description = "Cuerpo de la peticion invalida",
                     content = @Content(schema = @Schema(implementation = ProblemDetail.class))),
-            @ApiResponse(responseCode = "401", description = "Usuario no autorizado",
+            @ApiResponse(responseCode = "401", description = "Usuario no identificado",
                     content = @Content(schema = @Schema(implementation = ProblemDetail.class))),
             @ApiResponse(responseCode = "403", description = "Acceso denegado. Se requiere rol de SUPERUSER",
                     content = @Content(schema = @Schema(implementation = ProblemDetail.class))),
@@ -71,7 +72,7 @@ public class MenuController {
                     content = @Content(schema = @Schema(implementation = RegisterResponseDto.class))),
             @ApiResponse(responseCode = "400", description = "Cuerpo de la peticion invalida",
                     content = @Content(schema = @Schema(implementation = ProblemDetail.class))),
-            @ApiResponse(responseCode = "401", description = "Usuario no autorizado",
+            @ApiResponse(responseCode = "401", description = "Usuario no identificado",
                     content = @Content(schema = @Schema(implementation = ProblemDetail.class))),
             @ApiResponse(responseCode = "403", description = "Acceso denegado. Se requiere rol de SUPERUSER",
                     content = @Content(schema = @Schema(implementation = ProblemDetail.class))),
@@ -97,7 +98,7 @@ public class MenuController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "204", description = "Elemento eliminado del menu con exito",
                     content = @Content(schema = @Schema())),
-            @ApiResponse(responseCode = "401", description = "Usuario no autorizado",
+            @ApiResponse(responseCode = "401", description = "Usuario no identificado",
                     content = @Content(schema = @Schema(implementation = ProblemDetail.class))),
             @ApiResponse(responseCode = "403", description = "Acceso denegado. Se requiere rol de SUPERUSER",
                     content = @Content(schema = @Schema(implementation = ProblemDetail.class))),
@@ -116,12 +117,15 @@ public class MenuController {
 
 
 
-    @Operation(
-            summary = "Obtener el menú",
-            description = "Visualiza todos los items del menú."
-    )
     @GetMapping
-    @SecurityRequirement(name = "Bearer Authentication")
+    @Operation(summary = "Obtiene el menú completo", description = "Devuelve la estructura completa del menú lateral adaptada a los roles del usuario autenticado.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Menú devuelto exitosamente",
+                    content = @Content(array = @ArraySchema(schema = @Schema(implementation = MenuItemResponseDto.class)))),
+            @ApiResponse(responseCode = "401", description = "Usuario no identificado.",
+            content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
+    })
+
     public ResponseEntity<List<MenuItemResponseDto>> getMenu(@RequestHeader(name = "Authorization") String authorizationHeader) {
         String token = authorizationHeader.substring(7);
 

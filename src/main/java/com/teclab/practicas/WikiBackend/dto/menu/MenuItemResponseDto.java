@@ -1,5 +1,7 @@
 package com.teclab.practicas.WikiBackend.dto.menu;
 
+import io.swagger.v3.oas.annotations.media.ArraySchema;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -16,6 +18,7 @@ public class MenuItemResponseDto {
         private String path;
         private String icon;
         private Integer Order;
+        @ArraySchema(arraySchema = @Schema(implementation = MenuItemResponseDto.class))
         private List<MenuItemResponseDto> children;     // Para la jerarquía de submenús
         private Long parentId;
 }
