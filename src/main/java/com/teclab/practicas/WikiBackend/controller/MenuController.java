@@ -5,7 +5,6 @@ import com.teclab.practicas.WikiBackend.dto.menu.MenuItemRequestDto;
 import com.teclab.practicas.WikiBackend.dto.menu.MenuItemResponseDto;
 import com.teclab.practicas.WikiBackend.service.MenuService;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -117,15 +116,16 @@ public class MenuController {
 
 
 
-    @GetMapping
     @Operation(summary = "Obtiene el menú completo", description = "Devuelve la estructura completa del menú lateral adaptada a los roles del usuario autenticado.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Menú devuelto exitosamente",
-                    content = @Content(array = @ArraySchema(schema = @Schema(implementation = MenuItemResponseDto.class)))),
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = MenuItemResponseDto.class))),
             @ApiResponse(responseCode = "401", description = "Usuario no identificado.",
             content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
     })
-
+    @GetMapping
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<List<MenuItemResponseDto>> getMenu(@RequestHeader(name = "Authorization") String authorizationHeader) {
         String token = authorizationHeader.substring(7);
 
