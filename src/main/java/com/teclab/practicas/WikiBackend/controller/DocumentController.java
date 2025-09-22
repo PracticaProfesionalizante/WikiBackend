@@ -28,7 +28,7 @@ public class DocumentController {
             @RequestBody DocumentUrlRequestDto request
     ) {
         String token = authorizationHeader.substring(7);
-        DocumentDetailResponseDto documentId = documentService.createUrlDocument(token, request);
+        DocumentDetailResponseDto documentId = documentService.createDocument(token, request);
         return ResponseEntity.status(HttpStatus.CREATED).body(documentId);
     }
 
@@ -44,7 +44,7 @@ public class DocumentController {
             @RequestBody DocumentUrlRequestDto request
     ) {
         String token = authorizationHeader.substring(7);
-        DocumentDetailResponseDto documentId = documentService.editUrlDocument(token, id, request);
+        DocumentDetailResponseDto documentId = documentService.updateDocument(token, id, request);
         return ResponseEntity.status(HttpStatus.ACCEPTED).body(documentId);
     }
 
@@ -57,7 +57,7 @@ public class DocumentController {
     public ResponseEntity<DocumentDetailResponseDto> deleteUrlDocument(
             @PathVariable Long id
     ) {
-        documentService.deleteUrlDocument(id);
+        documentService.deleteDocument(id);
         return ResponseEntity.noContent().build();
     }
 
@@ -68,7 +68,7 @@ public class DocumentController {
     @PreAuthorize("isAuthenticated()")
     @GetMapping("/{id}")
     public ResponseEntity<DocumentDetailResponseDto> getDocument(@PathVariable Long id) {
-        DocumentDetailResponseDto documentContent = documentService.getDocumentContent(id);
+        DocumentDetailResponseDto documentContent = documentService.getDocumentByRoles(id);
         return ResponseEntity.ok(documentContent);
     }
 
