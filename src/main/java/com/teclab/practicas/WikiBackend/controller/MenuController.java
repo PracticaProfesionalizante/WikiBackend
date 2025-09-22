@@ -116,7 +116,6 @@ public class MenuController {
 
 
 
-    @GetMapping
     @Operation(summary = "Obtiene el menú completo", description = "Devuelve la estructura completa del menú lateral adaptada a los roles del usuario autenticado.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Menú devuelto exitosamente",
@@ -125,7 +124,8 @@ public class MenuController {
             @ApiResponse(responseCode = "401", description = "Usuario no identificado.",
             content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
     })
-
+    @GetMapping
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<List<MenuItemResponseDto>> getMenu(@RequestHeader(name = "Authorization") String authorizationHeader) {
         String token = authorizationHeader.substring(7);
 
