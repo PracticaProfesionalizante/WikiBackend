@@ -29,6 +29,9 @@ public class Roles {
     @ManyToMany(mappedBy = "roles")
     private Set<MenuItem> menuItems = new HashSet<>();
 
+    @ManyToMany(mappedBy = "roles")
+    private Set<Document> documents = new HashSet<>();
+
     public enum RoleName {
         ROLE_SUPER_USER,
         ROLE_ADMIN,
