@@ -120,12 +120,7 @@ public class MenuServiceImplTest {
         createdItem.setPath(menuItemRequestDto.getPath());
         createdItem.setOrder(1);
 
-        when(menuItemConverter.toEntity(
-                any(MenuItemRequestDto.class),
-                1,
-                null,
-                Set.of()
-        )).thenReturn(menuItem);
+        when(menuItemConverter.toEntity(any(MenuItemRequestDto.class), eq(1), isNull(), anySet())).thenReturn(menuItem);
         when(menuItemRepository.findMaxOrderByParentId(any())).thenReturn(Optional.of(0));
         when(rolesRepository.findByName(any())).thenReturn(Optional.of(adminRole));
         when(menuItemRepository.save(any(MenuItem.class))).thenReturn(createdItem);
@@ -146,12 +141,7 @@ public class MenuServiceImplTest {
         // Arrange
         MenuItem newItem = new MenuItem();
         newItem.setPath("/existing-path");
-        when(menuItemConverter.toEntity(
-                any(MenuItemRequestDto.class),
-                1,
-                null,
-                Set.of()
-        )).thenReturn(newItem);
+        when(menuItemConverter.toEntity(any(MenuItemRequestDto.class), eq(1), isNull(), anySet())).thenReturn(newItem);
         when(menuItemRepository.findMaxOrderByParentId(any())).thenReturn(Optional.of(0));
         when(rolesRepository.findByName(any())).thenReturn(Optional.of(adminRole));
         doThrow(new DataIntegrityViolationException("Path '"+ newItem.getPath() +"' already exists")).when(menuItemRepository).save(any(MenuItem.class));
