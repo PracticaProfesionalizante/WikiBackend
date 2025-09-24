@@ -54,20 +54,17 @@ public class MenuServiceImpl implements MenuService {
 
     @Transactional()
     public MenuItemResponseDto createMenuItem(MenuItemRequestDto request) {
-            System.out.println("request - " + request);
 
-            MenuItem newItem = menuItemConverter.toEntity(request);
-            System.out.println("newItem - " + newItem);
+        int newOrder = getMaxOrder(request.getParentId()) + 1;
+        MenuItem parent = setParent(request.getParentId());
+        Set<Roles> roles = setRoles(request.getRoles());
 
-            int newOrder = getMaxOrder(request.getParentId()) + 1;
-            newItem.setOrder(newOrder);
-            System.out.println("newOrder - " + newOrder);
-
-            newItem.setParent(setParent(request.getParentId()));
-            System.out.println("newItem.getParent() - " + newItem.getParent());
-
-            newItem.setRoles(setRoles(request.getRoles()));
-            System.out.println("newItem.getRoles() - " + newItem.getRoles());
+        MenuItem newItem = menuItemConverter.toEntity(
+                request,
+                newOrder,
+                parent,
+                roles
+        );
 
         try {
             MenuItem itemCreated = menuItemRepository.save(newItem);
@@ -112,6 +109,7 @@ public class MenuServiceImpl implements MenuService {
         if (request.getName() != null) menuItem.setName(request.getName());
         if (request.getPath() != null) menuItem.setPath(request.getPath());
         if (request.getIcon() != null) menuItem.setIcon(request.getIcon());
+        menuItem.setView(request.getView());
         if (request.getRoles() != null) menuItem.setRoles(setRoles(request.getRoles()));
 
         return menuItemConverter.toDto(menuItemRepository.save(menuItem));

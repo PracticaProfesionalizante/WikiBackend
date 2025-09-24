@@ -16,6 +16,7 @@ public class MenuItemResponseDto {
         private String name;
         private String path;
         private String icon;
+        private String view;
         private Integer Order;
         @Schema(description = "Submenús de este item", type = "array", implementation = MenuItemResponseDto.class)
         private List<MenuItemResponseDto> children;     // Para la jerarquía de submenús

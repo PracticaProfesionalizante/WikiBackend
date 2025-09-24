@@ -3,8 +3,10 @@ package com.teclab.practicas.WikiBackend.converter.manu;
 import com.teclab.practicas.WikiBackend.dto.menu.MenuItemRequestDto;
 import com.teclab.practicas.WikiBackend.dto.menu.MenuItemResponseDto;
 import com.teclab.practicas.WikiBackend.entity.MenuItem;
+import com.teclab.practicas.WikiBackend.entity.Roles;
 import org.springframework.stereotype.Component;
 
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Component
@@ -24,7 +26,12 @@ public class MenuItemConverter {
         return item;
     }
 
-    public MenuItem toEntity(MenuItemRequestDto dto) {
+    public MenuItem toEntity(
+            MenuItemRequestDto dto,
+            int newOrder,
+            MenuItem parent,
+            Set<Roles> roles
+    ) {
         if (dto == null) throw new IllegalArgumentException("La request no puede ser vacia");
         System.out.println("dto - " + dto);
 
@@ -42,23 +49,24 @@ public class MenuItemConverter {
         item.setName(dto.getName());
         item.setPath(dto.getPath());
         item.setIcon(dto.getIcon());
+        item.setView(dto.getView());
+        item.setOrder(newOrder);
+        item.setParent(parent);
+        item.setRoles(roles);
 
         return item;
     }
 
     public MenuItemResponseDto toDto(MenuItem menuItem) {
-        if (menuItem == null) {
-            return null;
-        }
+        if (menuItem == null) return null;
 
         MenuItemResponseDto dto = new MenuItemResponseDto();
         dto.setId(menuItem.getId());
         dto.setName(menuItem.getName());
         dto.setPath(menuItem.getPath());
         dto.setIcon(menuItem.getIcon());
+        dto.setView(menuItem.getView());
         dto.setOrder(menuItem.getOrder());
-
-        // Asignar el parentId de forma segura
         dto.setParentId((menuItem.getParent() != null) ? menuItem.getParent().getId() : null);
 
         // Mapear recursivamente los hijos a DTOs

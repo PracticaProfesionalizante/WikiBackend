@@ -26,6 +26,7 @@ public class MenuItem {
     private String path;
 
     private String icon;
+    private String view;
 
     private Integer order;
 

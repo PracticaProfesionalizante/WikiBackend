@@ -10,16 +10,11 @@ import java.util.Set;
 @NoArgsConstructor
 @AllArgsConstructor
 public class MenuItemRequestDto {
-//    @NotBlank
     private String name;
-//    @NotBlank
     private String path;
-//    @NotBlank
     private String icon;
-//    @NotBlank @NotNull
+    private String view;
     private Integer order;
-//    @NotBlank
     private Long parentId;
-//    @NotEmpty(message = "La lista de roles no puede estar vacía.")
     private Set<String> roles;
 }
