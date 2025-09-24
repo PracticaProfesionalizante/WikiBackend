@@ -14,10 +14,11 @@ public class DocumentDetailResponseDto {
     private Long id;
     private String name;
     private String type;
-    private String path;
+    private String content;
     private String icon;
     private String createdBy;
     private String updatedBy;
+    private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private Set<String> roles;
 }

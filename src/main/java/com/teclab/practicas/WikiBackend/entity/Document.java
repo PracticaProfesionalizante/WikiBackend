@@ -26,7 +26,11 @@ public class Document {
 
     private String name;
     private TypeName type;
-    private String path;
+
+    @Lob
+    @Basic(fetch = FetchType.LAZY)
+    @Column(name = "content", columnDefinition = "TEXT")
+    private String content;
 
     @CreationTimestamp
     @Column(updatable = false)

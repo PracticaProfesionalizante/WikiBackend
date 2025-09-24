@@ -1,23 +1,19 @@
 package com.teclab.practicas.WikiBackend.service;
 
 import com.teclab.practicas.WikiBackend.dto.documents.DocumentDetailResponseDto;
-import com.teclab.practicas.WikiBackend.dto.documents.DocumentTextRequestDTO;
-import com.teclab.practicas.WikiBackend.dto.documents.DocumentTextResponseDTO;
-import com.teclab.practicas.WikiBackend.dto.documents.DocumentUrlRequestDto;
+import com.teclab.practicas.WikiBackend.dto.documents.DocumentRequestDto;
 
 import java.util.List;
 
 public interface DocumentService {
 
-    DocumentDetailResponseDto createDocument(DocumentUrlRequestDto requestDto);
-    List<DocumentDetailResponseDto> getAllDocuments();
-    DocumentDetailResponseDto getDocumentByRoles(Long id); //si es correcto devolver documento sino devolver error
-    DocumentDetailResponseDto updateDocument(Long id, DocumentUrlRequestDto requestDto);
+    DocumentDetailResponseDto getDocumentByRoles(Long id);
+    DocumentDetailResponseDto updateDocument(Long id, DocumentRequestDto request);
     void deleteDocument(Long id);
 
-    DocumentTextResponseDTO createText(DocumentTextRequestDTO documentTextRequestDTO);
-    DocumentTextResponseDTO updateText(Long id, DocumentTextRequestDTO documentTextRequestDTO);
-    void deleteText(Long id);
-    List<DocumentTextResponseDTO> getAllTextDocuments();
-    DocumentTextResponseDTO getTextDocument(Long id);
+    DocumentDetailResponseDto createDocument(DocumentRequestDto request);
+    List<DocumentDetailResponseDto> getAllUrlDocuments();
+
+    DocumentDetailResponseDto createText(DocumentRequestDto request);
+    List<DocumentDetailResponseDto> getAllTextDocuments();
 }

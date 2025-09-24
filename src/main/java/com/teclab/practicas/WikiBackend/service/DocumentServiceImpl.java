@@ -2,9 +2,7 @@ package com.teclab.practicas.WikiBackend.service;
 
 import com.teclab.practicas.WikiBackend.converter.document.DocumentConverter;
 import com.teclab.practicas.WikiBackend.dto.documents.DocumentDetailResponseDto;
-import com.teclab.practicas.WikiBackend.dto.documents.DocumentTextRequestDTO;
-import com.teclab.practicas.WikiBackend.dto.documents.DocumentTextResponseDTO;
-import com.teclab.practicas.WikiBackend.dto.documents.DocumentUrlRequestDto;
+import com.teclab.practicas.WikiBackend.dto.documents.DocumentRequestDto;
 import com.teclab.practicas.WikiBackend.entity.Document;
 import com.teclab.practicas.WikiBackend.entity.Roles;
 import com.teclab.practicas.WikiBackend.repository.DocumentRepository;
@@ -15,6 +13,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Collections;
 import java.util.List;
@@ -39,72 +38,30 @@ public class DocumentServiceImpl implements DocumentService {
         this.rolesRepository = rolesRepository;
     }
 
-    @Override
-    public DocumentDetailResponseDto createDocument(DocumentUrlRequestDto requestDto) {
-        try {
-            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-            String currentUsername = authentication.getName();
-
-            Set<Roles> roles = setRoles(requestDto.getRoles());
-
-            Document newDocument = documentConverter.dtoToUrlEntity(
-                    requestDto,
-                    roles,
-                    currentUsername,
-                    currentUsername
-            );
-
-            Document savedDocument = documentRepository.save(newDocument);
-            return documentConverter.entityToUrlDetailResponse(savedDocument);
-        } catch (RuntimeException e) {
-            System.out.println(e.getMessage());
-            throw e;
-        }
-    }
-
-    @Override
-    public List<DocumentDetailResponseDto> getAllDocuments() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication == null || !authentication.isAuthenticated()) {
-            return Collections.emptyList();
-        }
-
-        Set<String> userRoles = authentication.getAuthorities().stream()
-                .map(GrantedAuthority::getAuthority)
-                .collect(Collectors.toSet());
-
-        List<Document> documents;
-        if (userRoles.contains("ROLE_SUPER_USER")) documents = documentRepository.findAll();
-        else documents = documentRepository.findDocumentsByRole(userRoles);
-
-        return documents.stream()
-                .map(documentConverter::entityToUrlDetailResponse)
-                .collect(Collectors.toList());
-    }
-
+    //----------------------- IMPLEMENTACION PARA TEXT Y URL -----------------------
     @Override
     public DocumentDetailResponseDto getDocumentByRoles(Long id) {
         Document document = documentRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Documento no encontrado con ID: " + id));
-        return documentConverter.entityToUrlDetailResponse(document);
+        return documentConverter.toDetailResponse(document);
     }
 
     @Override
-    public DocumentDetailResponseDto updateDocument(Long id, DocumentUrlRequestDto requestDto) {
+    public DocumentDetailResponseDto updateDocument(Long id, DocumentRequestDto request) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String currentUsername = authentication.getName();
 
         Document document = documentRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Documento no encontrado con ID: " + id));
 
-        if (requestDto.getName() != null && !requestDto.getName().isBlank()) document.setName(requestDto.getName());
-        if (requestDto.getIcon() != null && !requestDto.getIcon().isBlank()) document.setIconName(requestDto.getIcon());
-        if (requestDto.getPath() != null && !requestDto.getPath().isBlank()) document.setPath(requestDto.getPath());
-        if (requestDto.getRoles() != null && !requestDto.getRoles().isEmpty()) document.setRoles(setRoles(requestDto.getRoles()));
+        if (request.getName() != null && !request.getName().isBlank()) document.setName(request.getName());
+        if (request.getIcon() != null && !request.getIcon().isBlank()) document.setIconName(request.getIcon());
+        if (request.getContent() != null && !request.getContent().isBlank()) document.setContent(request.getContent());
+        if (request.getRoles() != null && !request.getRoles().isEmpty()) document.setRoles(setRoles(request.getRoles()));
         document.setUpdatedBy(currentUsername);
 
         Document savedDocument = documentRepository.save(document);
-        return documentConverter.entityToUrlDetailResponse(savedDocument);
+        return documentConverter.toDetailResponse(savedDocument);
     }
 
     @Override
@@ -115,34 +72,102 @@ public class DocumentServiceImpl implements DocumentService {
             throw new RuntimeException("Documento no encontrado con ID: " + id);
         }
     }
+    //-----------------------------------------------------------------------------
 
-
-
-
+    //----------------------- IMPLEMENTACION PARA URL -----------------------
     @Override
-    public DocumentTextResponseDTO createText(DocumentTextRequestDTO documentTextRequestDTO) {
-        return null;
+    public DocumentDetailResponseDto createDocument(DocumentRequestDto request) {
+        try {
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            String currentUsername = authentication.getName();
+
+            Set<Roles> roles = setRoles(request.getRoles());
+
+            Document newDocument = documentConverter.toEntity(
+                    request,
+                    Document.TypeName.TYPE_URL,
+                    roles,
+                    currentUsername,
+                    currentUsername
+            );
+
+            Document savedDocument = documentRepository.save(newDocument);
+            return documentConverter.toDetailResponse(savedDocument);
+        } catch (RuntimeException e) {
+            System.out.println(e.getMessage());
+            throw e;
+        }
     }
 
     @Override
-    public DocumentTextResponseDTO updateText(Long id, DocumentTextRequestDTO documentTextRequestDTO) {
-        return null;
+    @Transactional(readOnly = true)
+    public List<DocumentDetailResponseDto> getAllUrlDocuments() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return Collections.emptyList();
+        }
+
+        Set<String> userRoles = authentication.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority)
+                .collect(Collectors.toSet());
+
+        List<Document> documents;
+        if (userRoles.contains("ROLE_SUPER_USER")) documents = documentRepository.findByType(Document.TypeName.TYPE_URL);
+        else documents = documentRepository.findDocumentsByRoleAndByType(userRoles, Document.TypeName.TYPE_URL);
+
+        return documents.stream()
+                .map(documentConverter::toDetailResponse)
+                .collect(Collectors.toList());
+    }
+    //-----------------------------------------------------------------------------
+
+    //----------------------- IMPLEMENTACION PARA TEXT -----------------------
+    @Override
+    public DocumentDetailResponseDto createText(DocumentRequestDto request){
+        try {
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            String currentUsername = authentication.getName();
+
+            Set<Roles> roles = setRoles(request.getRoles());
+
+            Document newDocument = documentConverter.toEntity(
+                    request,
+                    Document.TypeName.TYPE_TEXT,
+                    roles,
+                    currentUsername,
+                    currentUsername
+            );
+
+            Document savedDocument = documentRepository.save(newDocument);
+            return documentConverter.toDetailResponse(savedDocument);
+        } catch (RuntimeException e) {
+            System.out.println(e.getMessage());
+            throw e;
+        }
     }
 
     @Override
-    public void deleteText(Long id) {
+    @Transactional(readOnly = true)
+    public List<DocumentDetailResponseDto> getAllTextDocuments(){
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return Collections.emptyList();
+        }
 
-    }
+        Set<String> userRoles = authentication.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority)
+                .collect(Collectors.toSet());
 
-    @Override
-    public List<DocumentTextResponseDTO> getAllTextDocuments() {
-        return List.of();
-    }
+        List<Document> documents;
+        if (userRoles.contains("ROLE_SUPER_USER")) documents = documentRepository.findByType(Document.TypeName.TYPE_TEXT);
+        else documents = documentRepository.findDocumentsByRoleAndByType(userRoles, Document.TypeName.TYPE_TEXT);
 
-    @Override
-    public DocumentTextResponseDTO getTextDocument(Long id) {
-        return null;
+        return documents.stream()
+                .map(documentConverter::toSummaryResponse)
+                .collect(Collectors.toList());
     }
+    //-----------------------------------------------------------------------------
+
 
 
     private Set<Roles> setRoles(Set<String> rolesName){

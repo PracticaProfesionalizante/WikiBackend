@@ -12,12 +12,19 @@ import java.util.Set;
 @Repository
 public interface DocumentRepository extends JpaRepository<Document, Long> {
     /**
+     * Busca todos los documentos que coincidan con el 'type' especificado.
+     * @param type El valor del campo 'type' por el cual filtrar.
+     * @return Una lista de documentos que cumplen el criterio.
+     */
+    List<Document> findByType(Document.TypeName type);
+
+    /**
      * Busca todos los documentos que tienen al menos uno de los roles de acceso especificados.
      * Utiliza DISTINCT para asegurar que cada Documento aparezca solo una vez,
      * incluso si coincide con múltiples roles en la colección.
      * * @param roleNames Colección de nombres de roles de acceso.
      * @return Lista de documentos sin duplicados.
      */
-    @Query("SELECT DISTINCT d FROM documents d JOIN FETCH d.roles r WHERE r.name IN :roleNames")
-    List<Document> findDocumentsByRole(@Param("roleNames") Set<String> roleNames);
+    @Query("SELECT DISTINCT d FROM documents d JOIN FETCH d.roles r WHERE r.name IN :roleNames AND d.type = :type")
+    List<Document> findDocumentsByRoleAndByType(@Param("roleNames") Set<String> roleNames, @Param("type") Document.TypeName type);
 }
