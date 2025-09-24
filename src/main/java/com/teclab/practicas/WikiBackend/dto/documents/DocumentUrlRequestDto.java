@@ -11,6 +11,7 @@ import java.util.Set;
 @NoArgsConstructor
 public class DocumentUrlRequestDto {
     private String name;
-    private String url;
+    private String path;
+    private String icon;
     private Set<String> roles;
 }

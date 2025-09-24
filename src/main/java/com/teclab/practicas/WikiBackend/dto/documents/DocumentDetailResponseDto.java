@@ -5,6 +5,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.Set;
 
 @Data
 @AllArgsConstructor
@@ -14,5 +15,9 @@ public class DocumentDetailResponseDto {
     private String name;
     private String type;
     private String path;
+    private String icon;
+    private String createdBy;
+    private String updatedBy;
     private LocalDateTime updatedAt;
+    private Set<String> roles;
 }

@@ -44,16 +44,6 @@ public class DocumentController {
     }
 
     /**
-     * Endpoint para eliminar un documento de tipo TEXT.
-     * Solo accesible para SuperUser y Admin.
-     */
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteDocument(@PathVariable Long id) {
-        documentService.deleteText(id);
-        return ResponseEntity.noContent().build();
-    }
-
-    /**
      * Endpoint para un listado de documentos de tipo TEXT.
      * Solo accesible para SuperUser y Admin.
      */
@@ -67,7 +57,7 @@ public class DocumentController {
      * Endpoint para obtener un documento de tipo TEXT.
      * Solo accesible para SuperUser y Admin.
      */
-    @GetMapping("/{id}")
+    @GetMapping("/text/{id}")
     public ResponseEntity<DocumentTextResponseDTO> getDocumentById(@PathVariable Long id) {
         DocumentTextResponseDTO document = documentService.getTextDocument(id);
         return ResponseEntity.ok(document);
@@ -77,25 +67,16 @@ public class DocumentController {
 
 
 
-
-
-
-
-
-
-
     /**
      * Endpoint para crear un documento de tipo URL.
      * Solo accesible para SuperUser y Admin.
      */
-    @PreAuthorize("hasAnyRole('SUPER_USER', 'ADMIN')")
+    @PreAuthorize("hasAnyRole('ROLE_SUPER_USER', 'ROLE_ADMIN')")
     @PostMapping("/url")
     public ResponseEntity<DocumentDetailResponseDto> createUrlDocument(
-            @RequestHeader(name = "Authorization") String authorizationHeader,
-            @RequestBody DocumentUrlRequestDto request
+            @Valid @RequestBody DocumentUrlRequestDto request
     ) {
-        String token = authorizationHeader.substring(7);
-        DocumentDetailResponseDto documentId = documentService.createDocument(token, request);
+        DocumentDetailResponseDto documentId = documentService.createDocument(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(documentId);
     }
 
@@ -103,15 +84,13 @@ public class DocumentController {
      * Endpoint para editar un documento de tipo URL.
      * Solo accesible para SuperUser y Admin.
      */
-    @PreAuthorize("hasAnyRole('SUPER_USER', 'ADMIN')")
+    @PreAuthorize("hasAnyRole('ROLE_SUPER_USER', 'ROLE_ADMIN')")
     @PutMapping("/url/{id}")
     public ResponseEntity<DocumentDetailResponseDto> editUrlDocument(
-            @RequestHeader(name = "Authorization") String authorizationHeader,
             @PathVariable Long id,
             @RequestBody DocumentUrlRequestDto request
     ) {
-        String token = authorizationHeader.substring(7);
-        DocumentDetailResponseDto documentId = documentService.updateDocument(token, id, request);
+        DocumentDetailResponseDto documentId = documentService.updateDocument(id, request);
         return ResponseEntity.status(HttpStatus.ACCEPTED).body(documentId);
     }
 
@@ -119,9 +98,9 @@ public class DocumentController {
      * Endpoint para eliminar un documento de tipo URL.
      * Solo accesible para SuperUser y Admin.
      */
-    @PreAuthorize("hasAnyRole('SUPER_USER', 'ADMIN')")
+    @PreAuthorize("hasAnyRole('ROLE_SUPER_USER', 'ROLE_ADMIN')")
     @DeleteMapping("/{id}")
-    public ResponseEntity<DocumentDetailResponseDto> deleteUrlDocument(
+    public ResponseEntity<?> deleteUrlDocument(
             @PathVariable Long id
     ) {
         documentService.deleteDocument(id);
