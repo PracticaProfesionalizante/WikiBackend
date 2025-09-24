@@ -2,14 +2,22 @@ package com.teclab.practicas.WikiBackend.repository;
 
 import com.teclab.practicas.WikiBackend.entity.Document;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
 @Repository
 public interface DocumentRepository extends JpaRepository<Document, Long> {
-
-    // Metodo para buscar documentos que tienen roles de acceso específicos
-    List<Document> findByAccessRoles_NameIn(Collection<String> roleNames);
+    /**
+     * Busca todos los documentos que tienen al menos uno de los roles de acceso especificados.
+     * Utiliza DISTINCT para asegurar que cada Documento aparezca solo una vez,
+     * incluso si coincide con múltiples roles en la colección.
+     * * @param roleNames Colección de nombres de roles de acceso.
+     * @return Lista de documentos sin duplicados.
+     */
+    @Query("SELECT DISTINCT d FROM documents d JOIN FETCH d.roles r WHERE r.name IN :roleNames")
+    List<Document> findDocumentsByRole(@Param("roleNames") Set<String> roleNames);
 }

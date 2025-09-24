@@ -1,14 +1,12 @@
 package com.teclab.practicas.WikiBackend.entity;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
-import org.hibernate.validator.constraints.URL;
 
 import java.time.LocalDateTime;
 import java.util.HashSet;
@@ -26,31 +24,20 @@ public class Document {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @NotBlank(message = "El nombre del archivo es obligatorio.")
     private String name;
-
-    @NotBlank(message = "El tipo de documento es obligatorio.")
-    private String type; // Puede ser: 'PDF', 'TEXTO', 'URL'
-
-    @NotBlank(message = "El path del archivo es obligatorio.")
+    private TypeName type;
     private String path;
 
-    @URL(message = "La URL debe ser válida.")
-    @NotBlank(message = "La URL es obligatoria.")
-    private String url;
-
     @CreationTimestamp
+    @Column(updatable = false)
     private LocalDateTime createdAt;
 
     @UpdateTimestamp
     private LocalDateTime updatedAt;
 
-    @NotBlank(message = "La firma del creador es obligatoria.")
     private String createdBy;
-
     private String updatedBy;
 
-    //Relación ManyToMany con la entidad Role
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
             name = "role_document",
@@ -59,9 +46,13 @@ public class Document {
     )
     private Set<Roles> roles = new HashSet<>();
 
-    private String iconName; // Ruta al logo en el sistema de archivos
+    private String iconName;
 
-
+    public enum TypeName {
+        TYPE_PDF,
+        TYPE_TEXT,
+        TYPE_URL
+    }
 }
 
 
