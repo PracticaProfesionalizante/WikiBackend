@@ -50,7 +50,7 @@ public class UserServiceTest {
         testUser1.setCreatedAt(LocalDateTime.now().minusDays(5));
         testUser1.setUpdatedAt(LocalDateTime.now().minusDays(1));
         testUser1.setPassword("contraseña1");
-        testUser1.setRoles(new HashSet<>(List.of(new Roles(1L, Roles.RoleName.ROLE_COLLABORATOR, null, null))));
+        testUser1.setRoles(new HashSet<>(List.of(new Roles(1L, Roles.RoleName.ROLE_COLLABORATOR, null, null,null))));
 
         testUser2 = new User();
         testUser2.setId(2L);
@@ -60,7 +60,7 @@ public class UserServiceTest {
         testUser2.setCreatedAt(LocalDateTime.now().minusDays(10));
         testUser2.setUpdatedAt(LocalDateTime.now().minusDays(2));
         testUser2.setPassword("contraseña2");
-        testUser2.setRoles(new HashSet<>(Arrays.asList(new Roles(2L, Roles.RoleName.ROLE_SUPER_USER, null, null))));
+        testUser2.setRoles(new HashSet<>(Arrays.asList(new Roles(2L, Roles.RoleName.ROLE_SUPER_USER, null, null,null))));
     }
 
     @Test
