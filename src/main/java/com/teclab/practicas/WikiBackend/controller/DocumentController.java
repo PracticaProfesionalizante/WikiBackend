@@ -98,7 +98,7 @@ public class DocumentController {
     )
     @PreAuthorize("hasAnyRole('ROLE_SUPER_USER', 'ROLE_ADMIN')")
     @PostMapping
-    public ResponseEntity<DocumentDetailResponseDto> createUrlDocument(@Valid @RequestBody DocumentRequestDto request) {
+    public ResponseEntity<DocumentDetailResponseDto> createDocument(@Valid @RequestBody DocumentRequestDto request) {
         try {
             DocumentDetailResponseDto documentId = documentService.createDocument(request);
             return ResponseEntity.status(HttpStatus.CREATED).body(documentId);
@@ -121,7 +121,7 @@ public class DocumentController {
     )
     @PreAuthorize("hasAnyRole('ROLE_SUPER_USER', 'ROLE_ADMIN')")
     @PutMapping("/{id}")
-    public ResponseEntity<DocumentDetailResponseDto> editUrlDocument(
+    public ResponseEntity<DocumentDetailResponseDto> editDocument(
             @PathVariable Long id,
             @RequestBody DocumentRequestDto request
     ) {
@@ -146,7 +146,7 @@ public class DocumentController {
     )
     @PreAuthorize("hasAnyRole('ROLE_SUPER_USER', 'ROLE_ADMIN')")
     @DeleteMapping("/{id}")
-    public ResponseEntity<?> deleteUrlDocument(
+    public ResponseEntity<?> deleteDocument(
             @PathVariable Long id
     ) {
         try {
