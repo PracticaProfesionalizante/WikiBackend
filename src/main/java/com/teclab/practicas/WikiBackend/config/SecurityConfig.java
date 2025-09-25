@@ -1,6 +1,6 @@
 package com.teclab.practicas.WikiBackend.config;
 
-import com.teclab.practicas.WikiBackend.service.UserDetailServiceImpl;
+import com.teclab.practicas.WikiBackend.service.user.UserDetailServiceImpl;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;

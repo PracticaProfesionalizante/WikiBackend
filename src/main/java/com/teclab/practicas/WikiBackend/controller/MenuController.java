@@ -3,7 +3,7 @@ package com.teclab.practicas.WikiBackend.controller;
 import com.teclab.practicas.WikiBackend.dto.auth.RegisterResponseDto;
 import com.teclab.practicas.WikiBackend.dto.menu.MenuItemRequestDto;
 import com.teclab.practicas.WikiBackend.dto.menu.MenuItemResponseDto;
-import com.teclab.practicas.WikiBackend.service.MenuService;
+import com.teclab.practicas.WikiBackend.service.menu.MenuService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;

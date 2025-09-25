@@ -5,7 +5,7 @@ import com.teclab.practicas.WikiBackend.dto.user.UserResponseDto;
 import com.teclab.practicas.WikiBackend.entity.Roles;
 import com.teclab.practicas.WikiBackend.entity.User;
 import com.teclab.practicas.WikiBackend.repository.UserRepository;
-import com.teclab.practicas.WikiBackend.service.UserServiceImpl;
+import com.teclab.practicas.WikiBackend.service.user.UserServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

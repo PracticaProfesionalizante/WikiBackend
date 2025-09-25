@@ -1,7 +1,7 @@
 package com.teclab.practicas.WikiBackend.controller;
 
 import com.teclab.practicas.WikiBackend.dto.user.UserResponseDto;
-import com.teclab.practicas.WikiBackend.service.UserService;
+import com.teclab.practicas.WikiBackend.service.user.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;

@@ -1,4 +1,4 @@
-package com.teclab.practicas.WikiBackend.service;
+package com.teclab.practicas.WikiBackend.service.user;
 
 import com.teclab.practicas.WikiBackend.dto.auth.*;
 import com.teclab.practicas.WikiBackend.dto.user.UserResponseDto;

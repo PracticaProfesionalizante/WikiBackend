@@ -1,8 +1,9 @@
 package com.teclab.practicas.WikiBackend.controller;
 
 import com.teclab.practicas.WikiBackend.dto.documents.DocumentDetailResponseDto;
+import com.teclab.practicas.WikiBackend.dto.documents.DocumentFileRequestDto;
 import com.teclab.practicas.WikiBackend.dto.documents.DocumentRequestDto;
-import com.teclab.practicas.WikiBackend.service.DocumentService;
+import com.teclab.practicas.WikiBackend.service.document.DocumentService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
@@ -15,6 +16,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -33,6 +35,23 @@ public class DocumentController {
     @Autowired
     private DocumentService documentService;
 
+    //---------------------------------------------------------------------------------------
+    //-                               DOCUMENT FILE                                         -
+    //---------------------------------------------------------------------------------------
+    @PostMapping(value = "/file", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<DocumentDetailResponseDto> createFileDocument(@Valid @ModelAttribute DocumentFileRequestDto request) {
+        try {
+            DocumentDetailResponseDto savedDocument = documentService.createFileDocument(request);
+            return ResponseEntity.status(HttpStatus.CREATED).body(savedDocument);
+        } catch (RuntimeException e) {
+            System.out.println(e.getMessage());
+            throw e;
+        }
+    }
+
+    //---------------------------------------------------------------------------------------
+    //-                             DOCUMENT TEXT y URL                                     -
+    //---------------------------------------------------------------------------------------
     @Operation(
             summary = "Obtener un documento por ID",
             description = "Permite a cualquier usuario autenticado obtener los detalles de un documento (texto o URL). Aplica filtrado de contenido según los roles del usuario.",

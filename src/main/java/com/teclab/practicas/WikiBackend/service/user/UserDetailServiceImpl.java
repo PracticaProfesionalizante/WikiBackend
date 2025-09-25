@@ -1,4 +1,4 @@
-package com.teclab.practicas.WikiBackend.service;
+package com.teclab.practicas.WikiBackend.service.user;
 
 import com.teclab.practicas.WikiBackend.entity.User;
 import com.teclab.practicas.WikiBackend.repository.UserRepository;

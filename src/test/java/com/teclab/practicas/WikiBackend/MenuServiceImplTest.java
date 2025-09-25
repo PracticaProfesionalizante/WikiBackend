@@ -9,7 +9,7 @@ import com.teclab.practicas.WikiBackend.entity.Roles;
 import com.teclab.practicas.WikiBackend.exception.MenuPathExistente;
 import com.teclab.practicas.WikiBackend.repository.MenuItemRepository;
 import com.teclab.practicas.WikiBackend.repository.RolesRepository;
-import com.teclab.practicas.WikiBackend.service.MenuServiceImpl;
+import com.teclab.practicas.WikiBackend.service.menu.MenuServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

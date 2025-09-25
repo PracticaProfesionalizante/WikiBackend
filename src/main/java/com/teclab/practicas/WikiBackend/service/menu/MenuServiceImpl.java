@@ -1,4 +1,4 @@
-package com.teclab.practicas.WikiBackend.service;
+package com.teclab.practicas.WikiBackend.service.menu;
 
 import com.teclab.practicas.WikiBackend.config.JwtUtils;
 import com.teclab.practicas.WikiBackend.converter.manu.MenuItemConverter;

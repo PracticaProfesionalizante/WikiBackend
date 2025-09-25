@@ -1,19 +1,26 @@
-package com.teclab.practicas.WikiBackend.service;
+package com.teclab.practicas.WikiBackend.service.document;
 
 import com.teclab.practicas.WikiBackend.converter.document.DocumentConverter;
 import com.teclab.practicas.WikiBackend.dto.documents.DocumentDetailResponseDto;
+import com.teclab.practicas.WikiBackend.dto.documents.DocumentFileRequestDto;
 import com.teclab.practicas.WikiBackend.dto.documents.DocumentRequestDto;
 import com.teclab.practicas.WikiBackend.entity.Document;
 import com.teclab.practicas.WikiBackend.entity.Roles;
+import com.teclab.practicas.WikiBackend.exception.FileSizeExceededException;
+import com.teclab.practicas.WikiBackend.exception.InvalidFileTypeException;
 import com.teclab.practicas.WikiBackend.repository.DocumentRepository;
 import com.teclab.practicas.WikiBackend.repository.RolesRepository;
+import com.teclab.practicas.WikiBackend.service.file.FileStorageService;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.unit.DataSize;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.Collections;
 import java.util.List;
@@ -26,19 +33,73 @@ public class DocumentServiceImpl implements DocumentService {
     private final DocumentRepository documentRepository;
     private final RolesRepository rolesRepository;
     private final DocumentConverter documentConverter;
+    private final FileStorageService fileStorageService;
+
+    @Value("${app.upload.max-file-size-bytes:50MB}")
+    private DataSize MAX_FILE_SIZE_BYTES;
 
     @Autowired
     public DocumentServiceImpl(
             DocumentRepository documentRepository,
             DocumentConverter documentConverter,
+            FileStorageService fileStorageService,
             RolesRepository rolesRepository
     ) {
         this.documentRepository = documentRepository;
         this.documentConverter = documentConverter;
+        this.fileStorageService = fileStorageService;
         this.rolesRepository = rolesRepository;
     }
 
-    //----------------------- IMPLEMENTACION PARA TEXT Y URL -----------------------
+
+//    ---------------------------------------------------------------------------------------
+//    -                               DOCUMENT FILE                                         -
+//    ---------------------------------------------------------------------------------------
+    @Transactional
+    public DocumentDetailResponseDto createFileDocument(DocumentFileRequestDto request) {
+        try {
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            String currentUsername = authentication.getName();
+
+//            Set<Roles> roles = setRoles(Set.of());
+            Set<Roles> roles = setRoles(request.getRoles());
+
+            Document newDocument = documentConverter.toEntity(
+                    request,
+                    roles,
+                    currentUsername,
+                    currentUsername
+            );
+
+            MultipartFile file = request.getFile();
+
+            if (!"application/pdf".equals(file.getContentType())) {
+                throw new InvalidFileTypeException("Solo se permiten archivos PDF.");
+            }
+
+            long limitBytes = MAX_FILE_SIZE_BYTES.toBytes();
+            if (file.getSize() > limitBytes) {
+                throw new FileSizeExceededException("El archivo excede el límite de 10MB.");
+            }
+
+            String storedFilePath = fileStorageService.storeFile(file);
+            newDocument.setContent(storedFilePath);
+
+            Document savedDocument = documentRepository.save(newDocument);
+
+            return documentConverter.toDetailResponse(savedDocument);
+        } catch (RuntimeException e) {
+            System.out.println(e.getMessage());
+            throw e;
+        }
+    }
+
+
+
+
+//    ---------------------------------------------------------------------------------------
+//    -                             DOCUMENT TEXT y URL                                     -
+//    ---------------------------------------------------------------------------------------
     @Override
     public DocumentDetailResponseDto getDocumentById(Long id) {
         try {
