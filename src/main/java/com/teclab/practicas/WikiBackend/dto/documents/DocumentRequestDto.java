@@ -12,6 +12,8 @@ import java.util.Set;
 @NoArgsConstructor
 public class DocumentRequestDto {
     private String name;
+    private String type;
+    private String folder;
     @Size(max = 10485760, message = "El contenido del documento no puede exceder los 10MB.")
     private String content;
     private String icon;

@@ -7,13 +7,10 @@ import java.util.List;
 
 public interface DocumentService {
 
-    DocumentDetailResponseDto getDocumentByRoles(Long id);
+    DocumentDetailResponseDto getDocumentById(Long id);
+    DocumentDetailResponseDto createDocument(DocumentRequestDto request);
     DocumentDetailResponseDto updateDocument(Long id, DocumentRequestDto request);
     void deleteDocument(Long id);
 
-    DocumentDetailResponseDto createDocument(DocumentRequestDto request);
-    List<DocumentDetailResponseDto> getAllUrlDocuments();
-
-    DocumentDetailResponseDto createText(DocumentRequestDto request);
-    List<DocumentDetailResponseDto> getAllTextDocuments();
+    List<DocumentDetailResponseDto> getAllDocuments(String type, String folder);
 }

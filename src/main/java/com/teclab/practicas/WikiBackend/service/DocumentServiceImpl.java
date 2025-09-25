@@ -40,41 +40,49 @@ public class DocumentServiceImpl implements DocumentService {
 
     //----------------------- IMPLEMENTACION PARA TEXT Y URL -----------------------
     @Override
-    public DocumentDetailResponseDto getDocumentByRoles(Long id) {
-        Document document = documentRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Documento no encontrado con ID: " + id));
-        return documentConverter.toDetailResponse(document);
-    }
-
-    @Override
-    public DocumentDetailResponseDto updateDocument(Long id, DocumentRequestDto request) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String currentUsername = authentication.getName();
-
-        Document document = documentRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Documento no encontrado con ID: " + id));
-
-        if (request.getName() != null && !request.getName().isBlank()) document.setName(request.getName());
-        if (request.getIcon() != null && !request.getIcon().isBlank()) document.setIconName(request.getIcon());
-        if (request.getContent() != null && !request.getContent().isBlank()) document.setContent(request.getContent());
-        if (request.getRoles() != null && !request.getRoles().isEmpty()) document.setRoles(setRoles(request.getRoles()));
-        document.setUpdatedBy(currentUsername);
-
-        Document savedDocument = documentRepository.save(document);
-        return documentConverter.toDetailResponse(savedDocument);
-    }
-
-    @Override
-    public void deleteDocument(Long id) {
-        if (documentRepository.existsById(id)) {
-            documentRepository.deleteById(id);
-        } else {
-            throw new RuntimeException("Documento no encontrado con ID: " + id);
+    public DocumentDetailResponseDto getDocumentById(Long id) {
+        try {
+            Document document = documentRepository.findById(id)
+                    .orElseThrow(() -> new IllegalArgumentException("Documento no encontrado con ID: " + id));
+            return documentConverter.toDetailResponse(document);
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+            throw e;
         }
     }
-    //-----------------------------------------------------------------------------
 
-    //----------------------- IMPLEMENTACION PARA URL -----------------------
+    @Override
+    @Transactional(readOnly = true)
+    public List<DocumentDetailResponseDto> getAllDocuments(String typeRequest, String folderRequest) {
+        try {
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            if (authentication == null || !authentication.isAuthenticated()) {
+                return Collections.emptyList();
+            }
+
+            Document.TypeName type = null;
+            if (typeRequest != null ) type = Document.TypeName.valueOf(typeRequest);
+
+            Set<String> userRoles = authentication.getAuthorities().stream()
+                    .map(GrantedAuthority::getAuthority)
+                    .collect(Collectors.toSet());
+
+            List<Document> documents;
+            if (userRoles.contains("ROLE_SUPER_USER")) documents = documentRepository.findByTypeAndFolder(type, folderRequest);
+            else documents = documentRepository.findDocumentsByRoleAndTypeAndFolder(userRoles, type, folderRequest);
+
+            return documents.stream()
+                    .map( doc -> {
+                        if (doc.getType() == Document.TypeName.TYPE_URL) return documentConverter.toDetailResponse(doc);
+                        else return documentConverter.toSummaryResponse(doc);
+                    })
+                    .collect(Collectors.toList());
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+            throw e;
+        }
+    }
+
     @Override
     public DocumentDetailResponseDto createDocument(DocumentRequestDto request) {
         try {
@@ -85,7 +93,6 @@ public class DocumentServiceImpl implements DocumentService {
 
             Document newDocument = documentConverter.toEntity(
                     request,
-                    Document.TypeName.TYPE_URL,
                     roles,
                     currentUsername,
                     currentUsername
@@ -100,75 +107,41 @@ public class DocumentServiceImpl implements DocumentService {
     }
 
     @Override
-    @Transactional(readOnly = true)
-    public List<DocumentDetailResponseDto> getAllUrlDocuments() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication == null || !authentication.isAuthenticated()) {
-            return Collections.emptyList();
-        }
-
-        Set<String> userRoles = authentication.getAuthorities().stream()
-                .map(GrantedAuthority::getAuthority)
-                .collect(Collectors.toSet());
-
-        List<Document> documents;
-        if (userRoles.contains("ROLE_SUPER_USER")) documents = documentRepository.findByType(Document.TypeName.TYPE_URL);
-        else documents = documentRepository.findDocumentsByRoleAndByType(userRoles, Document.TypeName.TYPE_URL);
-
-        return documents.stream()
-                .map(documentConverter::toDetailResponse)
-                .collect(Collectors.toList());
-    }
-    //-----------------------------------------------------------------------------
-
-    //----------------------- IMPLEMENTACION PARA TEXT -----------------------
-    @Override
-    public DocumentDetailResponseDto createText(DocumentRequestDto request){
+    public DocumentDetailResponseDto updateDocument(Long id, DocumentRequestDto request) {
         try {
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
             String currentUsername = authentication.getName();
 
-            Set<Roles> roles = setRoles(request.getRoles());
+            Document document = documentRepository.findById(id)
+                    .orElseThrow(() -> new RuntimeException("Documento no encontrado con ID: " + id));
 
-            Document newDocument = documentConverter.toEntity(
-                    request,
-                    Document.TypeName.TYPE_TEXT,
-                    roles,
-                    currentUsername,
-                    currentUsername
-            );
+            if (request.getName() != null && !request.getName().isBlank()) document.setName(request.getName());
+            if (request.getIcon() != null && !request.getIcon().isBlank()) document.setIconName(request.getIcon());
+            if (request.getContent() != null && !request.getContent().isBlank()) document.setContent(request.getContent());
+            if (request.getRoles() != null && !request.getRoles().isEmpty()) document.setRoles(setRoles(request.getRoles()));
+            document.setUpdatedBy(currentUsername);
 
-            Document savedDocument = documentRepository.save(newDocument);
+            Document savedDocument = documentRepository.save(document);
             return documentConverter.toDetailResponse(savedDocument);
-        } catch (RuntimeException e) {
+        } catch (Exception e) {
             System.out.println(e.getMessage());
             throw e;
         }
     }
 
     @Override
-    @Transactional(readOnly = true)
-    public List<DocumentDetailResponseDto> getAllTextDocuments(){
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication == null || !authentication.isAuthenticated()) {
-            return Collections.emptyList();
+    public void deleteDocument(Long id) {
+        try {
+            if (documentRepository.existsById(id)) {
+                documentRepository.deleteById(id);
+            } else {
+                throw new RuntimeException("Documento no encontrado con ID: " + id);
+            }
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+            throw e;
         }
-
-        Set<String> userRoles = authentication.getAuthorities().stream()
-                .map(GrantedAuthority::getAuthority)
-                .collect(Collectors.toSet());
-
-        List<Document> documents;
-        if (userRoles.contains("ROLE_SUPER_USER")) documents = documentRepository.findByType(Document.TypeName.TYPE_TEXT);
-        else documents = documentRepository.findDocumentsByRoleAndByType(userRoles, Document.TypeName.TYPE_TEXT);
-
-        return documents.stream()
-                .map(documentConverter::toSummaryResponse)
-                .collect(Collectors.toList());
     }
-    //-----------------------------------------------------------------------------
-
-
 
     private Set<Roles> setRoles(Set<String> rolesName){
         if (rolesName == null || rolesName.isEmpty()) throw new IllegalArgumentException("Debe ingresar al menos un rol");

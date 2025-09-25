@@ -27,6 +27,9 @@ public class Document {
     private String name;
     private TypeName type;
 
+    @Column(nullable = false)
+    private String folder;
+
     @Lob
     @Basic(fetch = FetchType.LAZY)
     @Column(name = "content", columnDefinition = "TEXT")

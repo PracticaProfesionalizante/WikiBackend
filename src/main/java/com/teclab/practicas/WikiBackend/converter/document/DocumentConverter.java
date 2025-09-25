@@ -14,14 +14,24 @@ public class DocumentConverter {
 
     public Document toEntity(
             DocumentRequestDto dto,
-            Document.TypeName type,
             Set<Roles> roles,
             String createBy,
             String updateBy
     ) {
+        if (dto == null) throw new IllegalArgumentException("La request no puede ser vacia");;
+        if( dto.getName() == null || dto.getName().isEmpty() ) throw new IllegalArgumentException("Falta un campo");
+        if( dto.getType() == null || dto.getType().isEmpty() ) throw new IllegalArgumentException("Falta un campo");
+        if( dto.getFolder() == null || dto.getFolder().isEmpty() ) throw new IllegalArgumentException("Falta un campo");
+        if( dto.getContent() == null || dto.getContent().isEmpty() ) throw new IllegalArgumentException("Falta un campo");
+        if( dto.getIcon() == null || dto.getIcon().isEmpty() ) throw new IllegalArgumentException("Falta un campo");
+        if( roles == null || roles.isEmpty() ) throw new IllegalArgumentException("Falta un campo");
+        if( createBy == null || createBy.isEmpty() ) throw new IllegalArgumentException("Falta un campo");
+        if( updateBy == null || updateBy.isEmpty() ) throw new IllegalArgumentException("Falta un campo");
+
         Document document = new Document();
         document.setName(dto.getName());
-        document.setType(type);
+        document.setType(Document.TypeName.valueOf(dto.getType()));
+        document.setFolder(dto.getFolder());
         document.setContent(dto.getContent());
         document.setIconName(dto.getIcon());
         document.setRoles(roles);
@@ -36,6 +46,7 @@ public class DocumentConverter {
         dto.setId(document.getId());
         dto.setName(document.getName());
         dto.setType(document.getType().toString());
+        dto.setFolder(document.getFolder());
         dto.setContent(document.getContent());
         dto.setIcon(document.getIconName());
         dto.setCreatedBy(document.getCreatedBy());
@@ -51,6 +62,7 @@ public class DocumentConverter {
         dto.setId(document.getId());
         dto.setName(document.getName());
         dto.setType(document.getType().toString());
+        dto.setFolder(document.getFolder());
         dto.setIcon(document.getIconName());
         dto.setCreatedBy(document.getCreatedBy());
         dto.setUpdatedBy(document.getUpdatedBy());

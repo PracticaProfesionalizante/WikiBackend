@@ -5,9 +5,11 @@ import com.teclab.practicas.WikiBackend.dto.documents.DocumentRequestDto;
 import com.teclab.practicas.WikiBackend.service.DocumentService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -31,18 +33,20 @@ public class DocumentController {
     @Autowired
     private DocumentService documentService;
 
-    // --- Endpoints Comunes (GET, PUT, DELETE) ----------------------------
     @Operation(
             summary = "Obtener un documento por ID",
             description = "Permite a cualquier usuario autenticado obtener los detalles de un documento (texto o URL). Aplica filtrado de contenido según los roles del usuario.",
             parameters = {
-                    @Parameter(name = "id", description = "ID único del documento a buscar", required = true, example = "101")
+                    @Parameter(name = "id", description = "ID único del documento a buscar", required = true, example = "24")
             },
             responses = {
-                    @ApiResponse(responseCode = "200", description = "Detalles del documento obtenidos con éxito"),
-                    @ApiResponse(responseCode = "401", description = "No autorizado (Token JWT inválido o ausente)"),
-                    @ApiResponse(responseCode = "403", description = "Prohibido (Usuario autenticado pero sin permisos suficientes para el contenido)"),
-                    @ApiResponse(responseCode = "404", description = "Documento no encontrado",
+                    @ApiResponse(responseCode = "200", description = "Detalles del documento obtenidos con éxito",
+                            content = @Content(schema = @Schema(implementation = DocumentDetailResponseDto.class))),
+                    @ApiResponse(responseCode = "401", description = "No autorizado (Token JWT inválido o ausente)",
+                            content = @Content(schema = @Schema(implementation = ProblemDetail.class))),
+                    @ApiResponse(responseCode = "403", description = "Prohibido (Usuario autenticado pero sin permisos suficientes para el contenido)",
+                            content = @Content(schema = @Schema(implementation = ProblemDetail.class))),
+                    @ApiResponse(responseCode = "422", description = "Documento no encontrado",
                             content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
             }
     )
@@ -50,8 +54,54 @@ public class DocumentController {
     @GetMapping("/{id}")
     public ResponseEntity<DocumentDetailResponseDto> getDocument(@PathVariable Long id) {
         try {
-            DocumentDetailResponseDto documentContent = documentService.getDocumentByRoles(id);
+            DocumentDetailResponseDto documentContent = documentService.getDocumentById(id);
             return ResponseEntity.ok(documentContent);
+        } catch (RuntimeException e) {
+            System.out.println(e.getMessage());
+            throw e;
+        }
+    }
+
+    @Operation(
+            summary = "Obtener listado de documentos",
+            description = "Recupera una lista de documentos detallados. Permite filtrar los resultados por 'type' o 'folder'. Requiere autenticación (JWT).",
+            security = @SecurityRequirement(name = "bearerAuth") // Hace referencia a la configuración de JWT
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Listado de documentos recuperado con éxito.",
+                    content = @Content(mediaType = "application/json",
+                            array = @ArraySchema(schema = @Schema(implementation = DocumentDetailResponseDto.class)))),
+            @ApiResponse(responseCode = "401", description = "No Autorizado (Unauthorized). El token JWT es inválido o no se proporcionó.",
+                    content = @Content(schema = @Schema(implementation = ProblemDetail.class))), // Usamos ProblemDetail para coherencia),
+            @ApiResponse(responseCode = "422", description = "No se envio un parametro correcto.",
+                    content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
+    })
+    @PreAuthorize("isAuthenticated()")
+    @GetMapping
+    public ResponseEntity<List<DocumentDetailResponseDto>> getAllDocument(@RequestParam(required = false) String type, @RequestParam(required = false) String folder) {
+        try {
+            List<DocumentDetailResponseDto> documents = documentService.getAllDocuments(type, folder);
+            return ResponseEntity.ok(documents);
+        } catch (RuntimeException e) {
+            System.out.println(e.getMessage());
+            throw e;
+        }
+    }
+
+    @Operation(
+            summary = "Crear un nuevo documento de URL o TEXT",
+            description = "Crea un nuevo documento de tipo URL/Link o TEXT. Solo accesible para SUPER_USER o ADMIN.",
+            responses = {
+                    @ApiResponse(responseCode = "201", description = "Documento creado con éxito"),
+                    @ApiResponse(responseCode = "403", description = "Prohibido (Usuario autenticado sin rol Admin/SuperUser)")
+            }
+    )
+    @PreAuthorize("hasAnyRole('ROLE_SUPER_USER', 'ROLE_ADMIN')")
+    @PostMapping
+    public ResponseEntity<DocumentDetailResponseDto> createUrlDocument(@Valid @RequestBody DocumentRequestDto request) {
+        try {
+            DocumentDetailResponseDto documentId = documentService.createDocument(request);
+            return ResponseEntity.status(HttpStatus.CREATED).body(documentId);
         } catch (RuntimeException e) {
             System.out.println(e.getMessage());
             throw e;
@@ -107,83 +157,4 @@ public class DocumentController {
             throw e;
         }
     }
-    //-------------------------------------------------------------------------
-
-    //--------------------- REQUEST PARA TEXT ----------------------------
-    @Operation(
-            summary = "Crear un nuevo documento de Texto",
-            description = "Crea un nuevo documento de tipo TEXT. Requiere autenticación y validación de los campos de `DocumentRequestDto`.",
-            responses = {
-                    @ApiResponse(responseCode = "201", description = "Documento de texto creado con éxito"),
-                    @ApiResponse(responseCode = "422", description = "Fallo en la validación de campos del DTO",
-                            content = @Content(schema = @Schema(implementation = ProblemDetail.class))),
-                    @ApiResponse(responseCode = "401", description = "No autorizado")
-            }
-    )
-    @PreAuthorize("hasAnyRole('ROLE_SUPER_USER', 'ROLE_ADMIN')")
-    @PostMapping("/text")
-    public ResponseEntity<DocumentDetailResponseDto> createDocument(@Valid @RequestBody DocumentRequestDto request) {
-        try {
-            DocumentDetailResponseDto newDocument = documentService.createText(request);
-            return new ResponseEntity<>(newDocument, HttpStatus.CREATED);
-        } catch (RuntimeException e) {
-            System.out.println(e.getMessage());
-            throw e;
-        }
-    }
-
-    @Operation(
-            summary = "Obtener todos los documentos de Texto",
-            description = "Devuelve una lista de todos los documentos de tipo TEXT. Requiere autenticación."
-    )
-    @PreAuthorize("isAuthenticated()")
-    @GetMapping("/texts")
-    public ResponseEntity<List<DocumentDetailResponseDto>> getAllTextDocuments() {
-        try {
-            List<DocumentDetailResponseDto> documents = documentService.getAllTextDocuments();
-            return ResponseEntity.ok(documents);
-        } catch (RuntimeException e) {
-            System.out.println(e.getMessage());
-            throw e;
-        }
-    }
-    //-------------------------------------------------------------------------
-
-    //--------------------- REQUEST PARA URL ----------------------------
-    @Operation(
-            summary = "Crear un nuevo documento de URL",
-            description = "Crea un nuevo documento de tipo URL/Link. Solo accesible para SUPER_USER o ADMIN.",
-            responses = {
-                    @ApiResponse(responseCode = "201", description = "Documento de URL creado con éxito"),
-                    @ApiResponse(responseCode = "403", description = "Prohibido (Usuario autenticado sin rol Admin/SuperUser)")
-            }
-    )
-    @PreAuthorize("hasAnyRole('ROLE_SUPER_USER', 'ROLE_ADMIN')")
-    @PostMapping("/url")
-    public ResponseEntity<DocumentDetailResponseDto> createUrlDocument(@Valid @RequestBody DocumentRequestDto request) {
-        try {
-            DocumentDetailResponseDto documentId = documentService.createDocument(request);
-            return ResponseEntity.status(HttpStatus.CREATED).body(documentId);
-        } catch (RuntimeException e) {
-            System.out.println(e.getMessage());
-            throw e;
-        }
-    }
-
-    @Operation(
-            summary = "Obtener todos los documentos de URL",
-            description = "Devuelve una lista de todos los documentos de tipo URL/Link. Requiere autenticación."
-    )
-    @PreAuthorize("isAuthenticated()")
-    @GetMapping("/urls")
-    public ResponseEntity<List<DocumentDetailResponseDto>> getAllUrlDocument() {
-        try {
-            List<DocumentDetailResponseDto> documents = documentService.getAllUrlDocuments();
-            return ResponseEntity.ok(documents);
-        } catch (RuntimeException e) {
-            System.out.println(e.getMessage());
-            throw e;
-        }
-    }
-    //-------------------------------------------------------------------------
 }
