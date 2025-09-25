@@ -1,6 +1,7 @@
 package com.teclab.practicas.WikiBackend.converter.document;
 
 import com.teclab.practicas.WikiBackend.dto.documents.DocumentDetailResponseDto;
+import com.teclab.practicas.WikiBackend.dto.documents.DocumentFileRequestDto;
 import com.teclab.practicas.WikiBackend.dto.documents.DocumentRequestDto;
 import com.teclab.practicas.WikiBackend.entity.Document;
 import com.teclab.practicas.WikiBackend.entity.Roles;
@@ -21,6 +22,12 @@ public class DocumentConverter {
         if (dto == null) throw new IllegalArgumentException("La request no puede ser vacia");;
         if( dto.getName() == null || dto.getName().isEmpty() ) throw new IllegalArgumentException("Falta un campo");
         if( dto.getType() == null || dto.getType().isEmpty() ) throw new IllegalArgumentException("Falta un campo");
+        Document.TypeName type = null;
+        try {
+            type = Document.TypeName.valueOf(dto.getType());
+        } catch (RuntimeException e) {
+            throw new IllegalArgumentException("Tipo de archivo invalido");
+        }
         if( dto.getFolder() == null || dto.getFolder().isEmpty() ) throw new IllegalArgumentException("Falta un campo");
         if( dto.getContent() == null || dto.getContent().isEmpty() ) throw new IllegalArgumentException("Falta un campo");
         if( dto.getIcon() == null || dto.getIcon().isEmpty() ) throw new IllegalArgumentException("Falta un campo");
@@ -30,9 +37,41 @@ public class DocumentConverter {
 
         Document document = new Document();
         document.setName(dto.getName());
-        document.setType(Document.TypeName.valueOf(dto.getType()));
+        document.setType(type);
         document.setFolder(dto.getFolder());
         document.setContent(dto.getContent());
+        document.setIconName(dto.getIcon());
+        document.setRoles(roles);
+        document.setCreatedBy(createBy);
+        document.setUpdatedBy(updateBy);
+
+        return document;
+    }
+    public Document toEntity(
+            DocumentFileRequestDto dto,
+            Set<Roles> roles,
+            String createBy,
+            String updateBy
+    ) {
+        if (dto == null) throw new IllegalArgumentException("La request no puede ser vacia");;
+        if( dto.getName() == null || dto.getName().isEmpty() ) throw new IllegalArgumentException("Falta un campo");
+        if( dto.getType() == null || dto.getType().isEmpty() ) throw new IllegalArgumentException("Falta un campo");
+        Document.TypeName type = null;
+        try {
+            type = Document.TypeName.valueOf(dto.getType());
+        } catch (RuntimeException e) {
+            throw new IllegalArgumentException("Tipo de archivo invalido");
+        }
+        if( dto.getFolder() == null || dto.getFolder().isEmpty() ) throw new IllegalArgumentException("Falta un campo");
+        if( dto.getIcon() == null || dto.getIcon().isEmpty() ) throw new IllegalArgumentException("Falta un campo");
+        if( roles == null || roles.isEmpty() ) throw new IllegalArgumentException("Falta un campo");
+        if( createBy == null || createBy.isEmpty() ) throw new IllegalArgumentException("Falta un campo");
+        if( updateBy == null || updateBy.isEmpty() ) throw new IllegalArgumentException("Falta un campo");
+
+        Document document = new Document();
+        document.setName(dto.getName());
+        document.setType(type);
+        document.setFolder(dto.getFolder());
         document.setIconName(dto.getIcon());
         document.setRoles(roles);
         document.setCreatedBy(createBy);
