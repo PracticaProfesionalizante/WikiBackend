@@ -20,10 +20,10 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-@RestControllerAdvice // <- para JSON
+@RestControllerAdvice
 @Order(Ordered.HIGHEST_PRECEDENCE)
 public class ApiExceptionHandler {
-//    DataIntegrityViolationException
+
     @ExceptionHandler(MethodArgumentNotValidException.class) // @Valid en @RequestBody
     public ProblemDetail handleBodyValidation(MethodArgumentNotValidException ex, HttpServletRequest req) {
         Map<String, String> errors = ex.getBindingResult()
@@ -48,7 +48,7 @@ public class ApiExceptionHandler {
         Map<String, String> errors = ex.getConstraintViolations().stream()
                 .collect(Collectors.toMap(
                         v -> v.getPropertyPath().toString(),
-                        ConstraintViolation::getMessage,   // forma más limpia
+                        ConstraintViolation::getMessage,
                         (a, b) -> a,                      // si hay duplicados, me quedo con el primero
                         LinkedHashMap::new                // mantiene orden de inserción
                 ));
