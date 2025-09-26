@@ -48,6 +48,15 @@ public class DocumentController {
             throw e;
         }
     }
+    @PutMapping("/file/{id}")
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_SUPER_USER')")
+    public ResponseEntity<DocumentDetailResponseDto> updateDocument(
+            @PathVariable Long id,
+            @Valid @ModelAttribute DocumentFileRequestDto request
+    ) {
+        DocumentDetailResponseDto updatedDocument = documentService.updateFileDocument(id, request);
+        return ResponseEntity.ok(updatedDocument);
+    }
 
     //---------------------------------------------------------------------------------------
     //-                             DOCUMENT TEXT y URL                                     -

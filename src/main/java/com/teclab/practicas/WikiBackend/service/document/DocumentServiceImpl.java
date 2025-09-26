@@ -55,7 +55,7 @@ public class DocumentServiceImpl implements DocumentService {
     }
 
 
-//    ---------------------------------------------------------------------------------------
+    //    ---------------------------------------------------------------------------------------
 //    -                               DOCUMENT FILE                                         -
 //    ---------------------------------------------------------------------------------------
     @Transactional
@@ -101,10 +101,73 @@ public class DocumentServiceImpl implements DocumentService {
         }
     }
 
+    @Override
+    @Transactional
+    public DocumentDetailResponseDto updateFileDocument(Long id, DocumentFileRequestDto request) {
+        try {
+            // Validación de request y archivo
+            if (request == null) {
+                throw new IllegalArgumentException("La solicitud no puede ser nula");
+            }
 
+            MultipartFile file = request.getFile();
+            validateFile(file);
 
+            // Usuario autenticado
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            if (authentication == null || !authentication.isAuthenticated()) {
+                throw new IllegalStateException("Usuario no autenticado");
+            }
+            String currentUsername = authentication.getName();
 
-//    ---------------------------------------------------------------------------------------
+            // Buscar documento existente
+            Document document = documentRepository.findById(id)
+                    .orElseThrow(() -> new IllegalArgumentException("Documento no encontrado con ID: " + id));
+
+            // Actualizar campos opcionales provenientes del request
+            if (request.getName() != null && !request.getName().isBlank()) document.setName(request.getName());
+            if (request.getIcon() != null && !request.getIcon().isBlank()) document.setIconName(request.getIcon());
+            if (request.getFolder() != null && !request.getFolder().isBlank()) document.setFolder(request.getFolder());
+            if (request.getType() != null && !request.getType().isBlank()) {
+                try {
+                    document.setType(Document.TypeName.valueOf(request.getType()));
+                } catch (RuntimeException ex) {
+                    throw new IllegalArgumentException("Tipo de archivo invalido");
+                }
+            }
+            if (request.getRoles() != null && !request.getRoles().isEmpty()) {
+                document.setRoles(setRoles(request.getRoles()));
+            }
+
+            // Reemplazar archivo físico
+            String oldPath = document.getContent();
+            String storedFilePath = fileStorageService.storeFile(file);
+            document.setContent(storedFilePath);
+
+            // Borrar el archivo anterior (si existía)
+            if (oldPath != null && !oldPath.isBlank()) {
+                try {
+                    fileStorageService.deleteFile(oldPath);
+                } catch (Exception ex) {
+                    // No interrumpimos la actualización si falla el borrado del archivo previo
+                    log.warn("No se pudo eliminar el archivo anterior en '{}': {}", oldPath, ex.getMessage());
+                }
+            }
+
+            document.setUpdatedBy(currentUsername);
+
+            Document savedDocument = documentRepository.save(document);
+            return documentConverter.toDetailResponse(savedDocument);
+        } catch (InvalidFileTypeException | FileSizeExceededException e) {
+            log.warn("Validación de archivo fallida: {}", e.getMessage());
+            throw e;
+        } catch (RuntimeException e) {
+            log.error("Error al actualizar documento de archivo", e);
+            throw e;
+        }
+    }
+
+    //    ---------------------------------------------------------------------------------------
 //    -                             DOCUMENT TEXT y URL                                     -
 //    ---------------------------------------------------------------------------------------
     @Override
@@ -129,18 +192,19 @@ public class DocumentServiceImpl implements DocumentService {
             }
 
             Document.TypeName type = null;
-            if (typeRequest != null ) type = Document.TypeName.valueOf(typeRequest);
+            if (typeRequest != null) type = Document.TypeName.valueOf(typeRequest);
 
             Set<String> userRoles = authentication.getAuthorities().stream()
                     .map(GrantedAuthority::getAuthority)
                     .collect(Collectors.toSet());
 
             List<Document> documents;
-            if (userRoles.contains("ROLE_SUPER_USER")) documents = documentRepository.findByTypeAndFolder(type, folderRequest);
+            if (userRoles.contains("ROLE_SUPER_USER"))
+                documents = documentRepository.findByTypeAndFolder(type, folderRequest);
             else documents = documentRepository.findDocumentsByRoleAndTypeAndFolder(userRoles, type, folderRequest);
 
             return documents.stream()
-                    .map( doc -> {
+                    .map(doc -> {
                         if (doc.getType() == Document.TypeName.TYPE_URL) return documentConverter.toDetailResponse(doc);
                         else return documentConverter.toSummaryResponse(doc);
                     })
@@ -185,8 +249,10 @@ public class DocumentServiceImpl implements DocumentService {
 
             if (request.getName() != null && !request.getName().isBlank()) document.setName(request.getName());
             if (request.getIcon() != null && !request.getIcon().isBlank()) document.setIconName(request.getIcon());
-            if (request.getContent() != null && !request.getContent().isBlank()) document.setContent(request.getContent());
-            if (request.getRoles() != null && !request.getRoles().isEmpty()) document.setRoles(setRoles(request.getRoles()));
+            if (request.getContent() != null && !request.getContent().isBlank())
+                document.setContent(request.getContent());
+            if (request.getRoles() != null && !request.getRoles().isEmpty())
+                document.setRoles(setRoles(request.getRoles()));
             document.setUpdatedBy(currentUsername);
 
             Document savedDocument = documentRepository.save(document);
@@ -211,8 +277,9 @@ public class DocumentServiceImpl implements DocumentService {
         }
     }
 
-    private Set<Roles> setRoles(Set<String> rolesName){
-        if (rolesName == null || rolesName.isEmpty()) throw new IllegalArgumentException("Debe ingresar al menos un rol");
+    private Set<Roles> setRoles(Set<String> rolesName) {
+        if (rolesName == null || rolesName.isEmpty())
+            throw new IllegalArgumentException("Debe ingresar al menos un rol");
 
         return rolesName.stream()
                 .map(roleName -> rolesRepository.findByName(Roles.RoleName.valueOf("ROLE_" + roleName))

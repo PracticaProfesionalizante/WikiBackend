@@ -9,6 +9,7 @@ import java.util.List;
 public interface DocumentService {
 
     DocumentDetailResponseDto createFileDocument(DocumentFileRequestDto request);
+    DocumentDetailResponseDto updateFileDocument(Long id, DocumentFileRequestDto request);
 
     DocumentDetailResponseDto getDocumentById(Long id);
     DocumentDetailResponseDto createDocument(DocumentRequestDto request);
