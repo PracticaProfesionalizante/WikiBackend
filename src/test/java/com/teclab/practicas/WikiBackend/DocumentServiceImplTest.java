@@ -12,10 +12,12 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 
-import java.util.Optional;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -72,74 +74,88 @@ class DocumentServiceImplTest {
         verify(documentConverter, never()).toDetailResponse(any());
     }
 
-//    @Test
-//    void whenUserIsSuperUser_thenReturnsAllDocuments() {
-//        // Simulación del contexto de seguridad para el rol SUPER_USER
-//        Authentication authentication = mock(Authentication.class);
-//        SecurityContext securityContext = mock(SecurityContext.class);
-//        given(securityContext.getAuthentication()).willReturn(authentication);
-//        SecurityContextHolder.setContext(securityContext);
-//        given(authentication.isAuthenticated()).willReturn(true);
-//
-//        // Crear una lista de GrantedAuthority para el rol de SUPER_USER
-//        Collection<GrantedAuthority> authorities =
-//                Collections.singletonList(new SimpleGrantedAuthority("ROLE_SUPER_USER"));
-//
-//        // Mockear el comportamiento de getAuthorities()
-//        given(authentication.getAuthorities()).willReturn(authorities);
-//
-//        // Mockear el repositorio para devolver una lista completa de documentos
-//        List<Document> allDocs = Arrays.asList(new Document(), new Document());
-//        given(documentRepository.findByTypeAndFolder(any(), any())).willReturn(allDocs);
-//        given(documentConverter.toSummaryResponse(any())).willReturn(new DocumentDetailResponseDto());
-//
-//        // Ejecutar
-//        List<DocumentDetailResponseDto> result = documentService.getAllDocuments(null, null);
-//
-//        // Verificaciones
-//        assertFalse(result.isEmpty());
-//        assertEquals(2, result.size());
-//        verify(documentRepository, times(1)).findByTypeAndFolder(null, null);
-//        verify(documentRepository, never()).findDocumentsByRoleAndTypeAndFolder(any(), any(), any());
-//    }
-//
-//    @Test
-//    void whenUserIsCollaborator_thenReturnsFilteredDocuments() {
-//        // Simular un usuario con rol COLABORADOR
-//        given(securityContext.getAuthentication()).willReturn(authentication);
-//        SecurityContextHolder.setContext(securityContext);
-//        given(authentication.isAuthenticated()).willReturn(true);
-//        given(authentication.getAuthorities()).willReturn(Collections.singleton(new SimpleGrantedAuthority("ROLE_COLABORADOR")));
-//
-//        // Mockear el repositorio para devolver documentos filtrados por rol
-//        List<Document> filteredDocs = Collections.singletonList(new Document());
-//
-//        String typeRequest = "type";
-//        String folderRequest = "folder";
-//
-//        given(documentRepository.findDocumentsByRoleAndTypeAndFolder(
-//                any(Set.class),
-//                eq(typeRequest),
-//                eq(folderRequest)
-//        )).willReturn(filteredDocs);
-//
-//        given(documentConverter.toSummaryResponse(any(Document.class)))
-//                .willReturn(new DocumentDetailResponseDto());
-//
-//        // Ejecutar
-//        List<DocumentDetailResponseDto> result = documentService.getAllDocuments(typeRequest, folderRequest);
-//
-//        // Verificaciones
-//        assertFalse(result.isEmpty());
-//        assertEquals(1, result.size());
-//
-//        // CORRECCIÓN: Eliminar los nombres de los parámetros
-//        verify(documentRepository, times(1)).findDocumentsByRoleAndTypeAndFolder(
-//                any(),
-//                eq(typeRequest),
-//                eq(folderRequest)
-//        );
-//    }
+    @Test
+    void whenUserIsSuperUser_thenReturnsAllDocuments() {
+        // Simulación del contexto de seguridad para el rol SUPER_USER
+        Authentication authentication = mock(Authentication.class);
+        SecurityContext securityContext = mock(SecurityContext.class);
+        when(securityContext.getAuthentication()).thenReturn(authentication);
+        SecurityContextHolder.setContext(securityContext);
+        when(authentication.isAuthenticated()).thenReturn(true);
+
+        // Crear una lista de GrantedAuthority para el rol de SUPER_USER
+        Collection<GrantedAuthority> authorities = new ArrayList<>();
+        authorities.add(new SimpleGrantedAuthority("ROLE_SUPER_USER"));
+
+        // Mockear el comportamiento de getAuthorities()
+        when(authentication.getAuthorities()).thenReturn((Collection)authorities);
+
+        // Mockear el repositorio y el conversor
+        List<Document> allDocs = Arrays.asList(new Document(), new Document());
+        when(documentRepository.findByTypeAndFolder(any(), any())).thenReturn(allDocs);
+        when(documentConverter.toSummaryResponse(any())).thenReturn(new DocumentDetailResponseDto());
+
+        // Ejecutar
+        List<DocumentDetailResponseDto> result = documentService.getAllDocuments(null, null);
+
+        // Verificaciones
+        assertFalse(result.isEmpty());
+        assertEquals(2, result.size());
+        verify(documentRepository, times(1)).findByTypeAndFolder(null, null);
+        verify(documentRepository, never()).findDocumentsByRoleAndTypeAndFolder(any(), any(), any());
+    }
+
+    @Test
+    void whenUserIsCollaborator_thenReturnsFilteredDocuments() {
+        // Simulación del usuario COLABORADOR
+        when(securityContext.getAuthentication()).thenReturn(authentication);
+        SecurityContextHolder.setContext(securityContext);
+        when(authentication.isAuthenticated()).thenReturn(true);
+
+        Collection<? extends GrantedAuthority> authorities =
+                Collections.singletonList(new SimpleGrantedAuthority("ROLE_COLABORADOR"));
+
+        when(authentication.getAuthorities()).thenAnswer(invocation -> authorities);
+
+        // Mockear el repositorio para devolver documentos filtrados por rol
+        List<Document> filteredDocs = Collections.singletonList(new Document());
+
+        String folderRequest = "folder";
+        Document.TypeName typeRequest = Document.TypeName.TYPE_PDF;
+
+        // MOCKEO DEL REPOSITORIO
+        when(documentRepository.findDocumentsByRoleAndTypeAndFolder(
+                anySet(),
+                eq(typeRequest),
+                eq(folderRequest)
+        )).thenReturn(filteredDocs);
+
+        // Mockeo del conversor
+        when(documentConverter.toSummaryResponse(any(Document.class)))
+                .thenReturn(new DocumentDetailResponseDto());
+
+        // Ejecutar
+        List<DocumentDetailResponseDto> result = documentService.getAllDocuments(
+                typeRequest.name(),
+                folderRequest
+        );
+
+        // Verificaciones
+        assertFalse(result.isEmpty());
+        assertEquals(1, result.size());
+
+        // Verificación del repositorio
+        verify(documentRepository, times(1)).findDocumentsByRoleAndTypeAndFolder(
+                any(),
+                eq(typeRequest),
+                eq(folderRequest)
+        );
+
+        // Verificación de que NO se llamó al metodo para SuperUser
+        verify(documentRepository, never()).findByTypeAndFolder(any(), any());
+
+    }
+
 
     @Test
     void whenUpdateDocumentWithValidData_thenSavesAndReturnsUpdatedDocument() {
