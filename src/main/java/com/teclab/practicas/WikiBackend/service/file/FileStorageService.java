@@ -1,6 +1,6 @@
 package com.teclab.practicas.WikiBackend.service.file;
 
-import jakarta.annotation.Resource;
+import org.springframework.core.io.Resource;
 import org.springframework.web.multipart.MultipartFile;
 
 public interface FileStorageService {
