@@ -16,9 +16,9 @@ import java.util.UUID;
 @Service
 public class FileStorageServiceImpl implements FileStorageService {
 
-    @Autowired
     private final Path fileStorageLocation;
 
+    @Autowired
     public FileStorageServiceImpl(Path fileStorageLocation) {
         this.fileStorageLocation = fileStorageLocation;
     }
@@ -26,7 +26,7 @@ public class FileStorageServiceImpl implements FileStorageService {
     @Override
     public String storeFile(MultipartFile file) {
         // 1. Generar un nombre de archivo único y seguro.
-        String fileName = StringUtils.cleanPath(UUID.randomUUID().toString() + "_" + file.getOriginalFilename());
+        String fileName = StringUtils.cleanPath(UUID.randomUUID() + "_" + file.getOriginalFilename());
 
         try {
             // 2. Copiar el stream del archivo al destino del disco.

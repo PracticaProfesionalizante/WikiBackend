@@ -28,7 +28,7 @@ public interface DocumentRepository extends JpaRepository<Document, Long> {
      * * @param roleNames Colección de nombres de roles de acceso.
      * @return Lista de documentos sin duplicados.
      */
-    @Query("SELECT d FROM documents d JOIN FETCH d.roles r " +
+    @Query("SELECT d FROM documents d LEFT JOIN FETCH d.roles r " +
             "WHERE r.name IN :roleNames " +
             "AND (:type IS NULL OR d.type = :type) " +
             "AND (:folder IS NULL OR d.folder = :folder)")

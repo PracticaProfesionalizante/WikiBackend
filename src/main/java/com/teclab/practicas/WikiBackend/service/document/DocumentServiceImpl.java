@@ -12,6 +12,7 @@ import com.teclab.practicas.WikiBackend.repository.DocumentRepository;
 import com.teclab.practicas.WikiBackend.repository.RolesRepository;
 import com.teclab.practicas.WikiBackend.service.file.FileStorageService;
 import jakarta.persistence.EntityNotFoundException;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
@@ -21,6 +22,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.unit.DataSize;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.http.MediaType;
 
 import java.util.Collections;
 import java.util.List;
@@ -28,6 +30,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
+@Slf4j
 public class DocumentServiceImpl implements DocumentService {
 
     private final DocumentRepository documentRepository;
@@ -58,11 +61,26 @@ public class DocumentServiceImpl implements DocumentService {
     @Transactional
     public DocumentDetailResponseDto createFileDocument(DocumentFileRequestDto request) {
         try {
+            // Validación de request y archivo
+            if (request == null) {
+                throw new IllegalArgumentException("La solicitud no puede ser nula");
+            }
+
+            MultipartFile file = request.getFile();
+            validateFile(file);
+
+            // Usuario autenticado
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            if (authentication == null || !authentication.isAuthenticated()) {
+                throw new IllegalStateException("Usuario no autenticado");
+            }
             String currentUsername = authentication.getName();
 
-//            Set<Roles> roles = setRoles(Set.of());
+            // Roles
             Set<Roles> roles = setRoles(request.getRoles());
+
+            // Persistir archivo y documento
+            String storedFilePath = fileStorageService.storeFile(file);
 
             Document newDocument = documentConverter.toEntity(
                     request,
@@ -70,26 +88,15 @@ public class DocumentServiceImpl implements DocumentService {
                     currentUsername,
                     currentUsername
             );
-
-            MultipartFile file = request.getFile();
-
-            if (!"application/pdf".equals(file.getContentType())) {
-                throw new InvalidFileTypeException("Solo se permiten archivos PDF.");
-            }
-
-            long limitBytes = MAX_FILE_SIZE_BYTES.toBytes();
-            if (file.getSize() > limitBytes) {
-                throw new FileSizeExceededException("El archivo excede el límite de 10MB.");
-            }
-
-            String storedFilePath = fileStorageService.storeFile(file);
             newDocument.setContent(storedFilePath);
 
             Document savedDocument = documentRepository.save(newDocument);
-
             return documentConverter.toDetailResponse(savedDocument);
+        } catch (InvalidFileTypeException | FileSizeExceededException e) {
+            log.warn("Validación de archivo fallida: {}", e.getMessage());
+            throw e;
         } catch (RuntimeException e) {
-            System.out.println(e.getMessage());
+            log.error("Error al crear documento de archivo", e);
             throw e;
         }
     }
@@ -211,5 +218,43 @@ public class DocumentServiceImpl implements DocumentService {
                 .map(roleName -> rolesRepository.findByName(Roles.RoleName.valueOf("ROLE_" + roleName))
                         .orElseThrow(() -> new EntityNotFoundException("Role no encontrado con el siguiente nombre: " + roleName)))
                 .collect(Collectors.toSet());
+    }
+
+    /**
+     * Valida que el archivo no sea nulo/ vacío, sea PDF y no exceda el límite configurado.
+     */
+    private void validateFile(MultipartFile file) {
+        if (file == null || file.isEmpty()) {
+            throw new IllegalArgumentException("El archivo no puede estar vacío");
+        }
+
+        // Validación de tipo de contenido: tolera variantes (e.g. application/pdf; charset=binary)
+        String contentType = file.getContentType();
+        boolean isPdfByContentType = contentType != null && contentType.toLowerCase().startsWith(MediaType.APPLICATION_PDF_VALUE);
+
+        // Validación por firma mágica (%PDF-) para mayor robustez
+        boolean isPdfByMagic = false;
+        try (java.io.InputStream is = file.getInputStream()) {
+            byte[] header = new byte[5];
+            int read = is.read(header, 0, 5);
+            if (read == 5) {
+                isPdfByMagic = header[0] == '%'
+                        && header[1] == 'P'
+                        && header[2] == 'D'
+                        && header[3] == 'F'
+                        && header[4] == '-';
+            }
+        } catch (Exception ignored) {
+            // Si falla la lectura del header, nos quedamos con la validación por content-type
+        }
+
+        if (!(isPdfByContentType || isPdfByMagic)) {
+            throw new InvalidFileTypeException("Solo se permiten archivos PDF.");
+        }
+
+        long limitBytes = MAX_FILE_SIZE_BYTES.toBytes();
+        if (file.getSize() > limitBytes) {
+            throw new FileSizeExceededException("El archivo excede el límite de " + MAX_FILE_SIZE_BYTES.toMegabytes() + "MB.");
+        }
     }
 }
