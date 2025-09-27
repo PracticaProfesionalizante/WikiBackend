@@ -15,6 +15,7 @@ import jakarta.persistence.EntityNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.Resource;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -184,6 +185,27 @@ public class DocumentServiceImpl implements DocumentService {
 
     @Override
     @Transactional(readOnly = true)
+    public Resource getFileResourceByDocumentId(Long id) {
+        try {
+            Document document = documentRepository.findById(id)
+                    .orElseThrow(() -> new IllegalArgumentException("Documento no encontrado con ID: " + id));
+
+            if (document.getType() == null || document.getType() != Document.TypeName.TYPE_PDF) {
+                throw new IllegalArgumentException("El documento solicitado no es de tipo FILE/PDF");
+            }
+            if (document.getContent() == null || document.getContent().isBlank()) {
+                throw new IllegalArgumentException("El documento no tiene un archivo asociado");
+            }
+
+            return fileStorageService.loadFileAsResource(document.getContent());
+        } catch (RuntimeException e) {
+            log.error("Error al recuperar archivo de documento", e);
+            throw e;
+        }
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public List<DocumentDetailResponseDto> getAllDocuments(String typeRequest, String folderRequest) {
         try {
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -273,6 +295,33 @@ public class DocumentServiceImpl implements DocumentService {
             }
         } catch (Exception e) {
             System.out.println(e.getMessage());
+            throw e;
+        }
+    }
+
+    @Override
+    @Transactional
+    public void deleteFileDocument(Long id) {
+        try {
+            Document document = documentRepository.findById(id)
+                    .orElseThrow(() -> new IllegalArgumentException("Documento no encontrado con ID: " + id));
+
+            if (document.getType() == null || document.getType() != Document.TypeName.TYPE_PDF) {
+                throw new IllegalArgumentException("El documento solicitado no es de tipo FILE/PDF");
+            }
+
+            String path = document.getContent();
+            if (path != null && !path.isBlank()) {
+                try {
+                    fileStorageService.deleteFile(path);
+                } catch (Exception ex) {
+                    log.warn("No se pudo eliminar el archivo físico '{}': {}", path, ex.getMessage());
+                }
+            }
+
+            documentRepository.deleteById(id);
+        } catch (RuntimeException e) {
+            log.error("Error al eliminar documento de archivo", e);
             throw e;
         }
     }

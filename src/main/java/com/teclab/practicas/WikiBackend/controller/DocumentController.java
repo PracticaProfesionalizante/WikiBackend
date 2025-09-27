@@ -14,6 +14,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import org.springframework.core.io.Resource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -48,6 +49,7 @@ public class DocumentController {
             throw e;
         }
     }
+
     @PutMapping("/file/{id}")
     @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_SUPER_USER')")
     public ResponseEntity<DocumentDetailResponseDto> updateDocument(
@@ -56,6 +58,58 @@ public class DocumentController {
     ) {
         DocumentDetailResponseDto updatedDocument = documentService.updateFileDocument(id, request);
         return ResponseEntity.ok(updatedDocument);
+    }
+
+    @Operation(
+            summary = "Descargar/visualizar documento de tipo FILE (PDF)",
+            description = "Retorna el PDF almacenado para el documento indicado. Requiere autenticación.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Archivo recuperado con éxito"),
+            @ApiResponse(responseCode = "401", description = "No autorizado",
+                    content = @Content(schema = @Schema(implementation = ProblemDetail.class))),
+            @ApiResponse(responseCode = "404", description = "Documento o archivo no encontrado",
+                    content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
+    })
+    @PreAuthorize("isAuthenticated()")
+    @GetMapping(value = "/file/{id}")
+    public ResponseEntity<Resource> getFileDocument(@PathVariable Long id) {
+        try {
+            Resource resource = documentService.getFileResourceByDocumentId(id);
+            // Recuperamos el nombre para cabecera (sin exponer lógica de validación en controller)
+            DocumentDetailResponseDto doc = documentService.getDocumentById(id);
+            String filename = (doc.getName() != null && !doc.getName().isBlank()) ? doc.getName() + ".pdf" : "document.pdf";
+            return ResponseEntity.ok()
+                    .contentType(MediaType.APPLICATION_PDF)
+                    .header("Content-Disposition", "inline; filename=\"" + filename + "\"")
+                    .body(resource);
+        } catch (RuntimeException e) {
+            System.out.println(e.getMessage());
+            throw e;
+        }
+    }
+
+    @Operation(
+            summary = "Eliminar documento de tipo FILE (PDF)",
+            description = "Elimina el archivo físico y el registro del documento. Solo SUPER_USER o ADMIN.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "204", description = "Documento eliminado con éxito"),
+            @ApiResponse(responseCode = "401", description = "No autorizado",
+                    content = @Content(schema = @Schema(implementation = ProblemDetail.class))),
+            @ApiResponse(responseCode = "403", description = "Prohibido",
+                    content = @Content(schema = @Schema(implementation = ProblemDetail.class))),
+            @ApiResponse(responseCode = "404", description = "Documento no encontrado",
+                    content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
+    })
+    @PreAuthorize("hasAnyRole('ROLE_SUPER_USER', 'ROLE_ADMIN')")
+    @DeleteMapping("/file/{id}")
+    public ResponseEntity<?> deleteFileDocument(@PathVariable Long id) {
+        try {
+            documentService.deleteFileDocument(id);
+            return ResponseEntity.noContent().build();
+        } catch (RuntimeException e) {
+            System.out.println(e.getMessage());
+            throw e;
+        }
     }
 
     //---------------------------------------------------------------------------------------
