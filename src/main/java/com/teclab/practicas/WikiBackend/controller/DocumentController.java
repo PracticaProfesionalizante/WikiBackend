@@ -85,7 +85,7 @@ public class DocumentController {
     })
     @PutMapping("/file/{id}")
     @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_SUPER_USER')")
-    public ResponseEntity<DocumentDetailResponseDto> updateDocument(
+    public ResponseEntity<DocumentDetailResponseDto> updateFileDocument(
             @PathVariable Long id,
             @Valid @ModelAttribute DocumentFileRequestDto request
     ) {
@@ -194,7 +194,7 @@ public class DocumentController {
     })
     @PreAuthorize("isAuthenticated()")
     @GetMapping
-    public ResponseEntity<List<DocumentDetailResponseDto>> getAllDocument(@RequestParam(required = false) String type, @RequestParam(required = false) String folder) {
+    public ResponseEntity<List<DocumentDetailResponseDto>> getAllDocuments(@RequestParam(required = false) String type, @RequestParam(required = false) String folder) {
         try {
             List<DocumentDetailResponseDto> documents = documentService.getAllDocuments(type, folder);
             return ResponseEntity.ok(documents);
@@ -237,7 +237,7 @@ public class DocumentController {
     )
     @PreAuthorize("hasAnyRole('ROLE_SUPER_USER', 'ROLE_ADMIN')")
     @PutMapping("/{id}")
-    public ResponseEntity<DocumentDetailResponseDto> editDocument(
+    public ResponseEntity<DocumentDetailResponseDto> updateDocument(
             @PathVariable Long id,
             @RequestBody DocumentRequestDto request
     ) {
