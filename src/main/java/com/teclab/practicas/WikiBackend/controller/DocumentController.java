@@ -39,6 +39,19 @@ public class DocumentController {
     //---------------------------------------------------------------------------------------
     //-                               DOCUMENT FILE                                         -
     //---------------------------------------------------------------------------------------
+    @Operation(
+            summary = "Crear documento de tipo FILE (PDF)",
+            description = "Recibe multipart/form-data con metadatos y el archivo PDF, y crea el documento. Retorna el detalle del documento creado."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201", description = "Documento creado con éxito",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = DocumentDetailResponseDto.class))),
+            @ApiResponse(responseCode = "400", description = "Solicitud inválida (validación de campos)",
+                    content = @Content(schema = @Schema(implementation = ProblemDetail.class))),
+            @ApiResponse(responseCode = "401", description = "No autorizado",
+                    content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
+    })
     @PostMapping(value = "/file", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<DocumentDetailResponseDto> createFileDocument(@Valid @ModelAttribute DocumentFileRequestDto request) {
         try {
@@ -50,6 +63,26 @@ public class DocumentController {
         }
     }
 
+    @Operation(
+            summary = "Actualizar documento de tipo FILE (PDF)",
+            description = "Actualiza metadatos y/o reemplaza el archivo PDF del documento indicado por su ID.",
+            parameters = {
+                    @Parameter(name = "id", description = "ID del documento FILE a actualizar", required = true, example = "24")
+            }
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Documento actualizado con éxito",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = DocumentDetailResponseDto.class))),
+            @ApiResponse(responseCode = "400", description = "Solicitud inválida (validación de campos)",
+                    content = @Content(schema = @Schema(implementation = ProblemDetail.class))),
+            @ApiResponse(responseCode = "401", description = "No autorizado",
+                    content = @Content(schema = @Schema(implementation = ProblemDetail.class))),
+            @ApiResponse(responseCode = "403", description = "Prohibido",
+                    content = @Content(schema = @Schema(implementation = ProblemDetail.class))),
+            @ApiResponse(responseCode = "404", description = "Documento no encontrado",
+                    content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
+    })
     @PutMapping("/file/{id}")
     @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_SUPER_USER')")
     public ResponseEntity<DocumentDetailResponseDto> updateDocument(
@@ -62,7 +95,8 @@ public class DocumentController {
 
     @Operation(
             summary = "Descargar/visualizar documento de tipo FILE (PDF)",
-            description = "Retorna el PDF almacenado para el documento indicado. Requiere autenticación.")
+            description = "Retorna el PDF almacenado para el documento indicado. Requiere autenticación."
+    )
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Archivo recuperado con éxito"),
             @ApiResponse(responseCode = "401", description = "No autorizado",
