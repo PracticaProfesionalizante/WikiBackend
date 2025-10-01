@@ -5,7 +5,7 @@ import com.teclab.practicas.WikiBackend.dto.documents.DocumentDetailResponseDto;
 import com.teclab.practicas.WikiBackend.dto.documents.DocumentRequestDto;
 import com.teclab.practicas.WikiBackend.entity.Document;
 import com.teclab.practicas.WikiBackend.repository.DocumentRepository;
-import com.teclab.practicas.WikiBackend.service.DocumentServiceImpl;
+import com.teclab.practicas.WikiBackend.service.document.DocumentServiceImpl;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
