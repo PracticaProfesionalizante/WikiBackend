@@ -50,8 +50,13 @@ public class DocumentController {
             @ApiResponse(responseCode = "400", description = "Solicitud inválida (validación de campos)",
                     content = @Content(schema = @Schema(implementation = ProblemDetail.class))),
             @ApiResponse(responseCode = "401", description = "No autorizado",
+                    content = @Content(schema = @Schema(implementation = ProblemDetail.class))),
+            @ApiResponse(responseCode = "403", description = "Acceso Denegado",
+                    content = @Content(schema = @Schema(implementation = ProblemDetail.class))),
+            @ApiResponse(responseCode = "422", description = "Argumento no valido",
                     content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
     })
+    @PreAuthorize("hasRole('ROLE_SUPER_USER')")
     @PostMapping(value = "/file", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<DocumentDetailResponseDto> createFileDocument(@Valid @ModelAttribute DocumentFileRequestDto request) {
         try {
@@ -74,13 +79,11 @@ public class DocumentController {
             @ApiResponse(responseCode = "200", description = "Documento actualizado con éxito",
                     content = @Content(mediaType = "application/json",
                             schema = @Schema(implementation = DocumentDetailResponseDto.class))),
-            @ApiResponse(responseCode = "400", description = "Solicitud inválida (validación de campos)",
-                    content = @Content(schema = @Schema(implementation = ProblemDetail.class))),
             @ApiResponse(responseCode = "401", description = "No autorizado",
                     content = @Content(schema = @Schema(implementation = ProblemDetail.class))),
             @ApiResponse(responseCode = "403", description = "Prohibido",
                     content = @Content(schema = @Schema(implementation = ProblemDetail.class))),
-            @ApiResponse(responseCode = "404", description = "Documento no encontrado",
+            @ApiResponse(responseCode = "422", description = "Argumento no valido",
                     content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
     })
     @PutMapping("/file/{id}")
@@ -101,7 +104,9 @@ public class DocumentController {
             @ApiResponse(responseCode = "200", description = "Archivo recuperado con éxito"),
             @ApiResponse(responseCode = "401", description = "No autorizado",
                     content = @Content(schema = @Schema(implementation = ProblemDetail.class))),
-            @ApiResponse(responseCode = "404", description = "Documento o archivo no encontrado",
+            @ApiResponse(responseCode = "403", description = "Accesso Denegado",
+                    content = @Content(schema = @Schema(implementation = ProblemDetail.class))),
+            @ApiResponse(responseCode = "422", description = "Documento o archivo no encontrado con ese ID",
                     content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
     })
     @PreAuthorize("isAuthenticated()")
@@ -131,7 +136,7 @@ public class DocumentController {
                     content = @Content(schema = @Schema(implementation = ProblemDetail.class))),
             @ApiResponse(responseCode = "403", description = "Prohibido",
                     content = @Content(schema = @Schema(implementation = ProblemDetail.class))),
-            @ApiResponse(responseCode = "404", description = "Documento no encontrado",
+            @ApiResponse(responseCode = "422", description = "Argumento no valido",
                     content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
     })
     @PreAuthorize("hasAnyRole('ROLE_SUPER_USER', 'ROLE_ADMIN')")
@@ -188,7 +193,7 @@ public class DocumentController {
                     content = @Content(mediaType = "application/json",
                             array = @ArraySchema(schema = @Schema(implementation = DocumentDetailResponseDto.class)))),
             @ApiResponse(responseCode = "401", description = "No Autorizado (Unauthorized). El token JWT es inválido o no se proporcionó.",
-                    content = @Content(schema = @Schema(implementation = ProblemDetail.class))), // Usamos ProblemDetail para coherencia),
+                    content = @Content(schema = @Schema(implementation = ProblemDetail.class))),
             @ApiResponse(responseCode = "422", description = "No se envio un parametro correcto.",
                     content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
     })
@@ -209,7 +214,16 @@ public class DocumentController {
             description = "Crea un nuevo documento de tipo URL/Link o TEXT. Solo accesible para SUPER_USER o ADMIN.",
             responses = {
                     @ApiResponse(responseCode = "201", description = "Documento creado con éxito"),
-                    @ApiResponse(responseCode = "403", description = "Prohibido (Usuario autenticado sin rol Admin/SuperUser)")
+                    @ApiResponse(responseCode = "400", description = "Cuerpo de la peticion invalida",
+                            content = @Content(schema = @Schema(implementation = ProblemDetail.class))),
+                    @ApiResponse(responseCode = "401", description = "No autorizado",
+                            content = @Content(schema = @Schema(implementation = ProblemDetail.class))),
+                    @ApiResponse(responseCode = "401", description = "No autorizado",
+                            content = @Content(schema = @Schema(implementation = ProblemDetail.class))),
+                    @ApiResponse(responseCode = "403", description = "Prohibido (Usuario autenticado sin rol Admin/SuperUser)",
+                            content = @Content(schema = @Schema(implementation = ProblemDetail.class))),
+                    @ApiResponse(responseCode = "422", description = "No se envio un parametro correcto.",
+                            content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
             }
     )
     @PreAuthorize("hasAnyRole('ROLE_SUPER_USER', 'ROLE_ADMIN')")
@@ -232,7 +246,9 @@ public class DocumentController {
                     @ApiResponse(responseCode = "400", description = "Datos de entrada inválidos",
                             content = @Content(schema = @Schema(implementation = ProblemDetail.class))),
                     @ApiResponse(responseCode = "401", description = "No autorizado"),
-                    @ApiResponse(responseCode = "403", description = "Prohibido (Usuario autenticado sin rol Admin/SuperUser)")
+                    @ApiResponse(responseCode = "403", description = "Prohibido (Usuario autenticado sin rol Admin/SuperUser)"),
+                    @ApiResponse(responseCode = "422", description = "No se envio un parametro correcto.",
+                            content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
             }
     )
     @PreAuthorize("hasAnyRole('ROLE_SUPER_USER', 'ROLE_ADMIN')")
@@ -257,7 +273,7 @@ public class DocumentController {
                     @ApiResponse(responseCode = "204", description = "Documento eliminado con éxito (Sin contenido de respuesta)"),
                     @ApiResponse(responseCode = "401", description = "No autorizado"),
                     @ApiResponse(responseCode = "403", description = "Prohibido (Usuario autenticado sin rol Admin/SuperUser)"),
-                    @ApiResponse(responseCode = "404", description = "Documento no encontrado")
+                    @ApiResponse(responseCode = "500", description = "Error del cliente")
             }
     )
     @PreAuthorize("hasAnyRole('ROLE_SUPER_USER', 'ROLE_ADMIN')")
