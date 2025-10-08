@@ -10,6 +10,8 @@ import com.teclab.practicas.WikiBackend.exception.EmailIsExistente;
 import com.teclab.practicas.WikiBackend.repository.RolesRepository;
 import com.teclab.practicas.WikiBackend.repository.UserRepository;
 import jakarta.transaction.Transactional;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -25,6 +27,8 @@ import java.util.stream.Collectors;
 
 @Service
 public class UserServiceImpl implements UserService {
+
+    private static final Logger log = LoggerFactory.getLogger(UserServiceImpl.class);
 
     private final UserRepository userRepository;
     private final RolesRepository rolesRepository;
@@ -76,6 +80,22 @@ public class UserServiceImpl implements UserService {
             throw e;
         }
     }
+
+//    @Override
+//    public void logout(String refreshToken) {
+//        // JWT stateless: no se guarda estado en servidor. Validamos y registramos el intento.
+//        try {
+//            jwtUtils.validateJwtToken(refreshToken);
+//            String email = jwtUtils.getUsername(refreshToken);
+//            log.info("Logout solicitado con refresh token válido para usuario: {}", email);
+//        } catch (JwtException e) {
+//            // Token inválido/expirado: igualmente respondemos 200 por idempotencia
+//            log.warn("Logout con refresh token inválido/expirado: {}", e.getMessage());
+//        } catch (Exception e) {
+//            log.error("Error inesperado durante logout", e);
+//        }
+//        // Para invalidación real, implementar blacklist en almacenamiento externo (Redis/DB)
+//    }
 
     @Transactional
     private void userExists(User user) {
@@ -137,7 +157,6 @@ public class UserServiceImpl implements UserService {
             throw new RuntimeException(e);
         }
     }
-
 
     @Override
     public List<UserResponseDto> getAllUsers() {
