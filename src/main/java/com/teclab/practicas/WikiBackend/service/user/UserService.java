@@ -9,6 +9,7 @@ public interface UserService {
     public RegisterResponseDto createUser(RegisterRequestDto newUserDto);
     public LoginResponseDto loginUser(LoginRequestDto request);
     public RefreshResponseDto refreshToken(String jwt);
+    //public void logout(String refreshToken);
 
     public List<UserResponseDto> getAllUsers();
     public UserResponseDto getMyUser(String token);
