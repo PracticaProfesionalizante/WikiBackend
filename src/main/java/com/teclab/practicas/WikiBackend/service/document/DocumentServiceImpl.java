@@ -16,6 +16,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -176,6 +177,22 @@ public class DocumentServiceImpl implements DocumentService {
         try {
             Document document = documentRepository.findById(id)
                     .orElseThrow(() -> new IllegalArgumentException("Documento no encontrado con ID: " + id));
+
+            // Usuario autenticado
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            if (authentication == null || !authentication.isAuthenticated()) {
+                throw new IllegalStateException("Usuario no autenticado");
+            }
+            List<String> roles = authentication.getAuthorities().stream()
+                    .map(GrantedAuthority::getAuthority)
+                    .toList();
+
+            boolean hasMatch = roles.stream()
+                    .anyMatch(document.getRoles().stream().map(it -> it.getName().name()).toList()::contains);
+
+            if (!hasMatch) {
+                throw new AccessDeniedException("No tienes permiso para ver este documento");
+            }
             return documentConverter.toDetailResponse(document);
         } catch (Exception e) {
             System.out.println(e.getMessage());
