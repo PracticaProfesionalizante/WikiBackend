@@ -18,5 +18,5 @@ public interface DocumentService {
     DocumentDetailResponseDto createDocument(DocumentRequestDto request);
     DocumentDetailResponseDto updateDocument(Long id, DocumentRequestDto request);
     void deleteDocument(Long id);
-    List<DocumentDetailResponseDto> getAllDocuments(String type, String folder);
+    List<DocumentDetailResponseDto> getAllDocuments(String type, String slug);
 }
