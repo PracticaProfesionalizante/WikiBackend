@@ -243,9 +243,13 @@ public class DocumentServiceImpl implements DocumentService {
                     .collect(Collectors.toSet());
 
             List<Document> documents;
+
+            String slugPattern = slug;
+            if (slug == null) slugPattern = "";
+
             if (userRoles.contains("ROLE_SUPER_USER"))
-                documents = documentRepository.findByTypeAndSlug(type, slug);
-            else documents = documentRepository.findDocumentsByRoleAndTypeAndSlug(userRoles, type, slug);
+                documents = documentRepository.findByTypeAndSlug(type, slugPattern);
+            else documents = documentRepository.findDocumentsByRoleAndTypeAndSlug(userRoles, type, slugPattern);
 
             return documents.stream()
                     .map(doc -> {
