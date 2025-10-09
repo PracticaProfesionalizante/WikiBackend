@@ -6,7 +6,7 @@ import com.teclab.practicas.WikiBackend.dto.menu.MenuItemRequestDto;
 import com.teclab.practicas.WikiBackend.dto.menu.MenuItemResponseDto;
 import com.teclab.practicas.WikiBackend.entity.MenuItem;
 import com.teclab.practicas.WikiBackend.entity.Roles;
-import com.teclab.practicas.WikiBackend.exception.MenuPathExistente;
+import com.teclab.practicas.WikiBackend.exception.PathDuplicado;
 import com.teclab.practicas.WikiBackend.repository.MenuItemRepository;
 import com.teclab.practicas.WikiBackend.repository.RolesRepository;
 import com.teclab.practicas.WikiBackend.service.menu.MenuServiceImpl;
@@ -147,7 +147,7 @@ public class MenuServiceImplTest {
         doThrow(new DataIntegrityViolationException("Path '"+ newItem.getPath() +"' already exists")).when(menuItemRepository).save(any(MenuItem.class));
 
         // Act & Assert
-        assertThrows(MenuPathExistente.class, () -> menuService.createMenuItem(menuItemRequestDto));
+        assertThrows(PathDuplicado.class, () -> menuService.createMenuItem(menuItemRequestDto));
         verify(menuItemRepository).save(any(MenuItem.class));
     }
 

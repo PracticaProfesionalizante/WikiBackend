@@ -6,7 +6,7 @@ import com.teclab.practicas.WikiBackend.dto.menu.MenuItemRequestDto;
 import com.teclab.practicas.WikiBackend.dto.menu.MenuItemResponseDto;
 import com.teclab.practicas.WikiBackend.entity.MenuItem;
 import com.teclab.practicas.WikiBackend.entity.Roles;
-import com.teclab.practicas.WikiBackend.exception.MenuPathExistente;
+import com.teclab.practicas.WikiBackend.exception.PathDuplicado;
 import com.teclab.practicas.WikiBackend.repository.MenuItemRepository;
 import com.teclab.practicas.WikiBackend.repository.RolesRepository;
 import jakarta.persistence.EntityNotFoundException;
@@ -70,7 +70,7 @@ public class MenuServiceImpl implements MenuService {
             MenuItem itemCreated = menuItemRepository.save(newItem);
             return menuItemConverter.toDto(itemCreated);
         } catch (Exception e) {
-            throw new MenuPathExistente("El path: '"+ newItem.getPath() +"' ya esta en uso");
+            throw new PathDuplicado("El path: '"+ newItem.getPath() +"' ya esta en uso");
         }
     }
 

@@ -135,10 +135,10 @@ public class ApiExceptionHandler {
         return pd;
     }
 
-    @ExceptionHandler(MenuPathExistente.class)
-    public ProblemDetail handleMenuPathExistente(MenuPathExistente ex, HttpServletRequest req) {
+    @ExceptionHandler(PathDuplicado.class)
+    public ProblemDetail handleMenuPathExistente(PathDuplicado ex, HttpServletRequest req) {
         ProblemDetail pd = ProblemDetail.forStatus(HttpStatus.UNPROCESSABLE_ENTITY);
-        pd.setTitle("Path Duplicado");
+        pd.setTitle("Error Duplicado");
         pd.setDetail(ex.getMessage());
         pd.setProperty("path", req.getRequestURI());
         return pd;

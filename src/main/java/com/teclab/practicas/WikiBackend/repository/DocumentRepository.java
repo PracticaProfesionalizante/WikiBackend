@@ -11,6 +11,9 @@ import java.util.Set;
 
 @Repository
 public interface DocumentRepository extends JpaRepository<Document, Long> {
+
+    boolean existsBySlug(String slug);
+
     /**
      * Busca todos los documentos que coincidan con el 'type' especificado.
      * @param type El valor del campo 'type' por el cual filtrar.

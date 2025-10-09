@@ -8,6 +8,7 @@ import com.teclab.practicas.WikiBackend.entity.Document;
 import com.teclab.practicas.WikiBackend.entity.Roles;
 import com.teclab.practicas.WikiBackend.exception.FileSizeExceededException;
 import com.teclab.practicas.WikiBackend.exception.InvalidFileTypeException;
+import com.teclab.practicas.WikiBackend.exception.PathDuplicado;
 import com.teclab.practicas.WikiBackend.repository.DocumentRepository;
 import com.teclab.practicas.WikiBackend.repository.RolesRepository;
 import com.teclab.practicas.WikiBackend.service.file.FileStorageService;
@@ -16,6 +17,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
+import org.springframework.http.MediaType;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
@@ -24,7 +26,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.unit.DataSize;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.http.MediaType;
 
 import java.util.Collections;
 import java.util.List;
@@ -84,6 +85,8 @@ public class DocumentServiceImpl implements DocumentService {
             // Persistir archivo y documento
             String storedFilePath = fileStorageService.storeFile(file);
 
+            validateSlug(request.getSlug());
+
             Document newDocument = documentConverter.toEntity(
                     request,
                     roles,
@@ -91,6 +94,8 @@ public class DocumentServiceImpl implements DocumentService {
                     currentUsername
             );
             newDocument.setContent(storedFilePath);
+
+
 
             Document savedDocument = documentRepository.save(newDocument);
             return documentConverter.toDetailResponse(savedDocument);
@@ -262,6 +267,8 @@ public class DocumentServiceImpl implements DocumentService {
 
             Set<Roles> roles = setRoles(request.getRoles());
 
+            validateSlug(request.getSlug());
+
             Document newDocument = documentConverter.toEntity(
                     request,
                     roles,
@@ -388,6 +395,12 @@ public class DocumentServiceImpl implements DocumentService {
         long limitBytes = MAX_FILE_SIZE_BYTES.toBytes();
         if (file.getSize() > limitBytes) {
             throw new FileSizeExceededException("El archivo excede el límite de " + MAX_FILE_SIZE_BYTES.toMegabytes() + "MB.");
+        }
+    }
+
+    private void validateSlug(String slug){
+        if (documentRepository.existsBySlug(slug)) {
+            throw new PathDuplicado("El slug " + slug + " ya existe");
         }
     }
 }
