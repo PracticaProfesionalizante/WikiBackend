@@ -197,16 +197,16 @@ public class DocumentController {
             @ApiResponse(responseCode = "422", description = "No se envio un parametro correcto.",
                     content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
     })
-    @PreAuthorize("isAuthenticated()")
+    @PreAuthorize("hasAnyRole('ROLE_COLLABORATOR', 'ROLE_ADMIN', 'ROLE_SUPER_USER')")
     @GetMapping
-    public ResponseEntity<List<DocumentDetailResponseDto>> getAllDocuments(@RequestParam(required = false) String type, @RequestParam(required = false) String folder) {
-        try {
-            List<DocumentDetailResponseDto> documents = documentService.getAllDocuments(type, folder);
-            return ResponseEntity.ok(documents);
-        } catch (RuntimeException e) {
-            System.out.println(e.getMessage());
-            throw e;
-        }
+    public ResponseEntity<List<DocumentDetailResponseDto>> getAllDocuments(
+            @RequestParam(required = false) String type,
+            @RequestParam(required = false) String folder) {
+
+        // El servicio manejará la lógica de filtrado.
+        List<DocumentDetailResponseDto> documents = documentService.getAllDocuments(type, folder);
+
+        return ResponseEntity.ok(documents);
     }
 
     @Operation(
