@@ -185,7 +185,7 @@ public class DocumentController {
 
     @Operation(
             summary = "Obtener listado de documentos",
-            description = "Recupera una lista de documentos detallados. Permite filtrar los resultados por 'type' o 'folder'. Requiere autenticación (JWT).",
+            description = "Recupera una lista de documentos detallados. Permite filtrar los resultados por 'type' o 'slug'. Requiere autenticación (JWT).",
             security = @SecurityRequirement(name = "bearerAuth") // Hace referencia a la configuración de JWT
     )
     @ApiResponses(value = {
@@ -201,11 +201,8 @@ public class DocumentController {
     @GetMapping
     public ResponseEntity<List<DocumentDetailResponseDto>> getAllDocuments(
             @RequestParam(required = false) String type,
-            @RequestParam(required = false) String folder) {
-
-        // El servicio manejará la lógica de filtrado.
-        List<DocumentDetailResponseDto> documents = documentService.getAllDocuments(type, folder);
-
+            @RequestParam(required = false) String slug) {
+        List<DocumentDetailResponseDto> documents = documentService.getAllDocuments(type, slug);
         return ResponseEntity.ok(documents);
     }
 

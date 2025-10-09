@@ -228,7 +228,7 @@ public class DocumentServiceImpl implements DocumentService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<DocumentDetailResponseDto> getAllDocuments(String typeRequest, String folderRequest) {
+    public List<DocumentDetailResponseDto> getAllDocuments(String typeRequest, String slug) {
         try {
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
             if (authentication == null || !authentication.isAuthenticated()) {
@@ -244,8 +244,8 @@ public class DocumentServiceImpl implements DocumentService {
 
             List<Document> documents;
             if (userRoles.contains("ROLE_SUPER_USER"))
-                documents = documentRepository.findByTypeAndSlug(type, folderRequest);
-            else documents = documentRepository.findDocumentsByRoleAndTypeAndSlug(userRoles, type, folderRequest);
+                documents = documentRepository.findByTypeAndSlug(type, slug);
+            else documents = documentRepository.findDocumentsByRoleAndTypeAndSlug(userRoles, type, slug);
 
             return documents.stream()
                     .map(doc -> {

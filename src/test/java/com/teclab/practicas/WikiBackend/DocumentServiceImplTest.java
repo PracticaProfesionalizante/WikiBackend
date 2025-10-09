@@ -140,14 +140,14 @@ class DocumentServiceImplTest {
         // Mockear el repositorio para devolver documentos filtrados por rol
         List<Document> filteredDocs = Collections.singletonList(new Document());
 
-        String folderRequest = "folder";
+        String slugRequest = "slug";
         Document.TypeName typeRequest = Document.TypeName.TYPE_PDF;
 
         // MOCKEO DEL REPOSITORIO
         when(documentRepository.findDocumentsByRoleAndTypeAndSlug(
                 anySet(),
                 eq(typeRequest),
-                eq(folderRequest)
+                eq(slugRequest)
         )).thenReturn(filteredDocs);
 
         // Mockeo del conversor
@@ -157,7 +157,7 @@ class DocumentServiceImplTest {
         // Ejecutar
         List<DocumentDetailResponseDto> result = documentService.getAllDocuments(
                 typeRequest.name(),
-                folderRequest
+                slugRequest
         );
 
         // Verificaciones
@@ -168,7 +168,7 @@ class DocumentServiceImplTest {
         verify(documentRepository, times(1)).findDocumentsByRoleAndTypeAndSlug(
                 any(),
                 eq(typeRequest),
-                eq(folderRequest)
+                eq(slugRequest)
         );
 
         // Verificación de que NO se llamó al metodo para SuperUser
