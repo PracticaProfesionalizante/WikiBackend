@@ -244,8 +244,8 @@ public class DocumentServiceImpl implements DocumentService {
 
             List<Document> documents;
             if (userRoles.contains("ROLE_SUPER_USER"))
-                documents = documentRepository.findByTypeAndFolder(type, folderRequest);
-            else documents = documentRepository.findDocumentsByRoleAndTypeAndFolder(userRoles, type, folderRequest);
+                documents = documentRepository.findByTypeAndSlug(type, folderRequest);
+            else documents = documentRepository.findDocumentsByRoleAndTypeAndSlug(userRoles, type, folderRequest);
 
             return documents.stream()
                     .map(doc -> {
