@@ -4,6 +4,7 @@ import com.teclab.practicas.WikiBackend.converter.document.DocumentConverter;
 import com.teclab.practicas.WikiBackend.dto.documents.DocumentDetailResponseDto;
 import com.teclab.practicas.WikiBackend.dto.documents.DocumentRequestDto;
 import com.teclab.practicas.WikiBackend.entity.Document;
+import com.teclab.practicas.WikiBackend.entity.Roles;
 import com.teclab.practicas.WikiBackend.repository.DocumentRepository;
 import com.teclab.practicas.WikiBackend.service.document.DocumentServiceImpl;
 import org.junit.jupiter.api.Test;
@@ -43,16 +44,35 @@ class DocumentServiceImplTest {
 
     @Test
     void whenFindDocumentById_thenReturnsDocumentDetailResponseDto() {
-        // Caso de éxito: El documento existe
+        // Arrange
         Long documentId = 1L;
         Document document = new Document();
         DocumentDetailResponseDto responseDto = new DocumentDetailResponseDto();
-
+        
+        // Setup test role and add it to the document
+        Roles role = new Roles();
+        role.setName(Roles.RoleName.ROLE_SUPER_USER);
+        document.setRoles(Set.of(role));
+        
+        // Mock authorities
+        Collection<SimpleGrantedAuthority> authorities = Collections.singletonList(
+            new SimpleGrantedAuthority("ROLE_SUPER_USER")
+        );
+        
+        // Setup security context
+        SecurityContextHolder.setContext(securityContext);
+        given(securityContext.getAuthentication()).willReturn(authentication);
+        given(authentication.isAuthenticated()).willReturn(true);
+        given(authentication.getAuthorities()).willReturn((Collection)authorities);
+        
+        // Mock repository and converter
         given(documentRepository.findById(documentId)).willReturn(Optional.of(document));
         given(documentConverter.toDetailResponse(document)).willReturn(responseDto);
 
+        // Act
         DocumentDetailResponseDto result = documentService.getDocumentById(documentId);
 
+        // Assert
         assertNotNull(result);
         verify(documentRepository, times(1)).findById(documentId);
         verify(documentConverter, times(1)).toDetailResponse(document);
