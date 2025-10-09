@@ -14,7 +14,7 @@ import java.util.Set;
 public class DocumentFileRequestDto {
     private String name;
     private String type;
-    private String folder;
+    private String slug;
 
     @NotNull(message = "El archivo a subir (payload) es obligatorio.")
     private MultipartFile file;

@@ -27,8 +27,8 @@ public class Document {
     private String name;
     private TypeName type;
 
-    @Column(nullable = false)
-    private String folder;
+    @Column(nullable = false, unique = true)
+    private String slug;
 
     @Lob
     @Basic(fetch = FetchType.LAZY)

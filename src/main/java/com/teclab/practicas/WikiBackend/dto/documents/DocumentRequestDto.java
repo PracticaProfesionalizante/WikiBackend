@@ -13,7 +13,7 @@ import java.util.Set;
 public class DocumentRequestDto {
     private String name;
     private String type;
-    private String folder;
+    private String slug;
     @Size(max = 10485760, message = "El contenido del documento no puede exceder los 10MB.")
     private String content;
     private String icon;

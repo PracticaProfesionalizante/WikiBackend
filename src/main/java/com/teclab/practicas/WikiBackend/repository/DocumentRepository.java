@@ -18,8 +18,8 @@ public interface DocumentRepository extends JpaRepository<Document, Long> {
      */
     @Query("SELECT d FROM documents d " +
             "WHERE (:type IS NULL OR d.type = :type) " +
-            "AND (:folder IS NULL OR d.folder = :folder)")
-    List<Document> findByTypeAndFolder(@Param("type") Document.TypeName type, @Param("folder") String folder);
+            "AND (:slug IS NULL OR d.slug = :slug)")
+    List<Document> findByTypeAndFolder(@Param("type") Document.TypeName type, @Param("slug") String slug);
 
     /**
      * Busca todos los documentos que tienen al menos uno de los roles de acceso especificados.
@@ -31,6 +31,6 @@ public interface DocumentRepository extends JpaRepository<Document, Long> {
     @Query("SELECT d FROM documents d LEFT JOIN FETCH d.roles r " +
             "WHERE r.name IN :roleNames " +
             "AND (:type IS NULL OR d.type = :type) " +
-            "AND (:folder IS NULL OR d.folder = :folder)")
-    List<Document> findDocumentsByRoleAndTypeAndFolder(@Param("roleNames") Set<String> roleNames, @Param("type") Document.TypeName type, @Param("folder") String folder);
+            "AND (:slug IS NULL OR d.slug = :slug)")
+    List<Document> findDocumentsByRoleAndTypeAndFolder(@Param("roleNames") Set<String> roleNames, @Param("type") Document.TypeName type, @Param("slug") String slug);
 }

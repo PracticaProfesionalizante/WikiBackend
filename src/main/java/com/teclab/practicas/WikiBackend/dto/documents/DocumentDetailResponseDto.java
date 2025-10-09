@@ -14,7 +14,7 @@ public class DocumentDetailResponseDto {
     private Long id;
     private String name;
     private String type;
-    private String folder;
+    private String slug;
     private String content;
     private String icon;
     private String createdBy;

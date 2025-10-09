@@ -129,7 +129,7 @@ public class DocumentServiceImpl implements DocumentService {
             // Actualizar campos opcionales provenientes del request
             if (request.getName() != null && !request.getName().isBlank()) document.setName(request.getName());
             if (request.getIcon() != null && !request.getIcon().isBlank()) document.setIconName(request.getIcon());
-            if (request.getFolder() != null && !request.getFolder().isBlank()) document.setFolder(request.getFolder());
+            if (request.getSlug() != null && !request.getSlug().isBlank()) document.setSlug(request.getSlug());
             if (request.getType() != null && !request.getType().isBlank()) {
                 try {
                     document.setType(Document.TypeName.valueOf(request.getType()));
