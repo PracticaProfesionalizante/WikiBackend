@@ -3,6 +3,7 @@ package com.teclab.practicas.WikiBackend.service.user;
 import com.teclab.practicas.WikiBackend.config.JwtUtils;
 import com.teclab.practicas.WikiBackend.converter.auth.RegisterConverter;
 import com.teclab.practicas.WikiBackend.dto.auth.*;
+import com.teclab.practicas.WikiBackend.dto.user.UpdateUserRequestDto;
 import com.teclab.practicas.WikiBackend.dto.user.UserResponseDto;
 import com.teclab.practicas.WikiBackend.entity.Roles;
 import com.teclab.practicas.WikiBackend.entity.User;
@@ -79,6 +80,68 @@ public class UserServiceImpl implements UserService {
             System.out.println("createUser" + e);
             throw e;
         }
+    }
+
+
+    @Override
+    public void deleteUser(Long userId) {
+        // Verificar si el usuario existe
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado con ID: " + userId));
+
+        // Eliminar al usuario
+        userRepository.delete(user);
+
+        // Registrar la acción
+        log.info("Usuario eliminado con éxito. ID: {}", userId);
+    }
+
+    @Override
+    @Transactional
+    public UserResponseDto updateUser(Long userId, UpdateUserRequestDto updateUserDto) {
+        // Buscar el usuario existente
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado con ID: " + userId));
+
+        // Actualizar username si se proporciona
+        if (updateUserDto.getUsername() != null && !updateUserDto.getUsername().isBlank()) {
+            user.setUsername(updateUserDto.getUsername());
+        }
+
+        // Actualizar email si se proporciona
+        if (updateUserDto.getEmail() != null && !updateUserDto.getEmail().isBlank()) {
+            // Verificar si el nuevo email ya está en uso
+            if (userRepository.existsByEmail(updateUserDto.getEmail()) &&
+                    !user.getEmail().equals(updateUserDto.getEmail())) {
+                throw new EmailIsExistente("El correo electrónico ya está en uso");
+            }
+            user.setEmail(updateUserDto.getEmail());
+        }
+
+        // Actualizar enabled si se proporciona
+        if (updateUserDto.getEnabled() != null) {
+            user.setEnabled(updateUserDto.getEnabled());
+        }
+
+        // Actualizar contraseña si se proporciona
+        if (updateUserDto.getPassword() != null && !updateUserDto.getPassword().isBlank()) {
+            user.setPassword(passwordEncoder.encode(updateUserDto.getPassword()));
+        }
+
+        // Actualizar roles si se proporcionan
+        if (updateUserDto.getRoles() != null && !updateUserDto.getRoles().isEmpty()) {
+            Set<Roles> roles = updateUserDto.getRoles().stream()
+                    .map(role -> rolesRepository.findByName(Roles.RoleName.valueOf(role))
+                            .orElseThrow(() -> new IllegalArgumentException("Rol no válido: " + role)))
+                    .collect(Collectors.toSet());
+            user.setRoles(roles);
+        }
+
+        // Guardar los cambios
+        User updatedUser = userRepository.save(user);
+
+        // Convertir a DTO y devolver
+        return toUserResponseDto(updatedUser);
     }
 
 //    @Override
