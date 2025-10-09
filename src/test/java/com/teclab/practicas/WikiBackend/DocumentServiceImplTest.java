@@ -92,7 +92,7 @@ class DocumentServiceImplTest {
 
         // Mockear el repositorio y el conversor
         List<Document> allDocs = Arrays.asList(new Document(), new Document());
-        when(documentRepository.findByTypeAndFolder(any(), any())).thenReturn(allDocs);
+        when(documentRepository.findByTypeAndSlug(any(), any())).thenReturn(allDocs);
         when(documentConverter.toSummaryResponse(any())).thenReturn(new DocumentDetailResponseDto());
 
         // Ejecutar
@@ -101,8 +101,8 @@ class DocumentServiceImplTest {
         // Verificaciones
         assertFalse(result.isEmpty());
         assertEquals(2, result.size());
-        verify(documentRepository, times(1)).findByTypeAndFolder(null, null);
-        verify(documentRepository, never()).findDocumentsByRoleAndTypeAndFolder(any(), any(), any());
+        verify(documentRepository, times(1)).findByTypeAndSlug(null, null);
+        verify(documentRepository, never()).findDocumentsByRoleAndTypeAndSlug(any(), any(), any());
     }
 
     @Test
@@ -124,7 +124,7 @@ class DocumentServiceImplTest {
         Document.TypeName typeRequest = Document.TypeName.TYPE_PDF;
 
         // MOCKEO DEL REPOSITORIO
-        when(documentRepository.findDocumentsByRoleAndTypeAndFolder(
+        when(documentRepository.findDocumentsByRoleAndTypeAndSlug(
                 anySet(),
                 eq(typeRequest),
                 eq(folderRequest)
@@ -145,14 +145,14 @@ class DocumentServiceImplTest {
         assertEquals(1, result.size());
 
         // Verificación del repositorio
-        verify(documentRepository, times(1)).findDocumentsByRoleAndTypeAndFolder(
+        verify(documentRepository, times(1)).findDocumentsByRoleAndTypeAndSlug(
                 any(),
                 eq(typeRequest),
                 eq(folderRequest)
         );
 
         // Verificación de que NO se llamó al metodo para SuperUser
-        verify(documentRepository, never()).findByTypeAndFolder(any(), any());
+        verify(documentRepository, never()).findByTypeAndSlug(any(), any());
 
     }
 
