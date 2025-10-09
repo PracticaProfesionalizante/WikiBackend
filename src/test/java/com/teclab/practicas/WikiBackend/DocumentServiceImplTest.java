@@ -116,12 +116,12 @@ class DocumentServiceImplTest {
         when(documentConverter.toSummaryResponse(any())).thenReturn(new DocumentDetailResponseDto());
 
         // Ejecutar
-        List<DocumentDetailResponseDto> result = documentService.getAllDocuments(null, null);
+        List<DocumentDetailResponseDto> result = documentService.getAllDocuments(null, "");
 
         // Verificaciones
         assertFalse(result.isEmpty());
         assertEquals(2, result.size());
-        verify(documentRepository, times(1)).findByTypeAndSlug(null, null);
+        verify(documentRepository, times(1)).findByTypeAndSlug(null, "");
         verify(documentRepository, never()).findDocumentsByRoleAndTypeAndSlug(any(), any(), any());
     }
 
