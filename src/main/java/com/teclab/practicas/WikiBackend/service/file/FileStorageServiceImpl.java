@@ -2,6 +2,7 @@ package com.teclab.practicas.WikiBackend.service.file;
 
 import com.teclab.practicas.WikiBackend.exception.FileStorageException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Profile;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.stereotype.Service;
@@ -16,6 +17,7 @@ import java.nio.file.StandardCopyOption;
 import java.util.UUID;
 
 @Service
+@Profile("prod")
 public class FileStorageServiceImpl implements FileStorageService {
 
     private final Path fileStorageLocation;
