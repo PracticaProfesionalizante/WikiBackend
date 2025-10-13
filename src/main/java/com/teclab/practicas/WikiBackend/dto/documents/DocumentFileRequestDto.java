@@ -17,7 +17,7 @@ public class DocumentFileRequestDto {
     private String slug;
     private Boolean status;
 
-    @NotNull(message = "El archivo a subir (payload) es obligatorio.")
+    @NotNull(message = "El archivo a subir (file) es obligatorio.")
     private MultipartFile file;
 
     private String icon;
