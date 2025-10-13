@@ -135,6 +135,7 @@ public class DocumentServiceImpl implements DocumentService {
             if (request.getName() != null && !request.getName().isBlank()) document.setName(request.getName());
             if (request.getIcon() != null && !request.getIcon().isBlank()) document.setIconName(request.getIcon());
             if (request.getSlug() != null && !request.getSlug().isBlank()) document.setSlug(request.getSlug());
+            if (request.getStatus() != null) document.setStatus(request.getStatus());
             if (request.getType() != null && !request.getType().isBlank()) {
                 try {
                     document.setType(Document.TypeName.valueOf(request.getType()));
@@ -299,6 +300,8 @@ public class DocumentServiceImpl implements DocumentService {
 
             if (request.getName() != null && !request.getName().isBlank()) document.setName(request.getName());
             if (request.getIcon() != null && !request.getIcon().isBlank()) document.setIconName(request.getIcon());
+            if (request.getSlug() != null && !request.getSlug().isBlank()) document.setSlug(request.getSlug());
+            if (request.getStatus() != null) document.setStatus(request.getStatus());
             if (request.getContent() != null && !request.getContent().isBlank())
                 document.setContent(request.getContent());
             if (request.getRoles() != null && !request.getRoles().isEmpty())

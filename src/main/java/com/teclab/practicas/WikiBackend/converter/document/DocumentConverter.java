@@ -29,6 +29,7 @@ public class DocumentConverter {
             throw new IllegalArgumentException("Tipo de archivo invalido");
         }
         if( dto.getSlug() == null || dto.getSlug().isEmpty() ) throw new IllegalArgumentException("Falta un campo");
+        if( dto.getStatus() == null) throw new IllegalArgumentException("Falta un campo");
         if( dto.getContent() == null || dto.getContent().isEmpty() ) throw new IllegalArgumentException("Falta un campo");
         if( dto.getIcon() == null || dto.getIcon().isEmpty() ) throw new IllegalArgumentException("Falta un campo");
         if( roles == null || roles.isEmpty() ) throw new IllegalArgumentException("Falta un campo");
@@ -39,6 +40,7 @@ public class DocumentConverter {
         document.setName(dto.getName());
         document.setType(type);
         document.setSlug(dto.getSlug());
+        document.setStatus(dto.getStatus());
         document.setContent(dto.getContent());
         document.setIconName(dto.getIcon());
         document.setRoles(roles);
@@ -63,6 +65,7 @@ public class DocumentConverter {
             throw new IllegalArgumentException("Tipo de archivo invalido");
         }
         if( dto.getSlug() == null || dto.getSlug().isEmpty() ) throw new IllegalArgumentException("Falta un campo");
+        if( dto.getStatus() == null) throw new IllegalArgumentException("Falta un campo");
         if( dto.getIcon() == null || dto.getIcon().isEmpty() ) throw new IllegalArgumentException("Falta un campo");
         if( roles == null || roles.isEmpty() ) throw new IllegalArgumentException("Falta un campo");
         if( createBy == null || createBy.isEmpty() ) throw new IllegalArgumentException("Falta un campo");
@@ -72,6 +75,7 @@ public class DocumentConverter {
         document.setName(dto.getName());
         document.setType(type);
         document.setSlug(dto.getSlug());
+        document.setStatus(dto.getStatus());
         document.setIconName(dto.getIcon());
         document.setRoles(roles);
         document.setCreatedBy(createBy);
@@ -86,6 +90,7 @@ public class DocumentConverter {
         dto.setName(document.getName());
         dto.setType(document.getType().toString());
         dto.setSlug(document.getSlug());
+        dto.setStatus(document.getStatus());
         dto.setContent(document.getContent());
         dto.setIcon(document.getIconName());
         dto.setCreatedBy(document.getCreatedBy());
@@ -102,6 +107,7 @@ public class DocumentConverter {
         dto.setName(document.getName());
         dto.setType(document.getType().toString());
         dto.setSlug(document.getSlug());
+        dto.setStatus(document.getStatus());
         dto.setIcon(document.getIconName());
         dto.setCreatedBy(document.getCreatedBy());
         dto.setUpdatedBy(document.getUpdatedBy());

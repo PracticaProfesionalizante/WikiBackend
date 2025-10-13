@@ -22,6 +22,7 @@ public interface DocumentRepository extends JpaRepository<Document, Long> {
     @Query("SELECT d FROM documents d LEFT JOIN FETCH d.roles r " +
             "WHERE r.name IN :roleNames " +
             "AND (:type IS NULL OR d.type = :type) " +
+            "AND (status = true) " +
             "AND (:slugPattern IS NULL OR d.slug LIKE CONCAT(:slugPattern, '%'))")
     List<Document> findDocumentsByRoleAndTypeAndSlug(@Param("roleNames") Set<String> roleNames, @Param("type") Document.TypeName type, @Param("slugPattern") String slugPattern);
 }
