@@ -15,6 +15,7 @@ public class DocumentDetailResponseDto {
     private String name;
     private String type;
     private String slug;
+    private Boolean status;
     private String content;
     private String icon;
     private String createdBy;

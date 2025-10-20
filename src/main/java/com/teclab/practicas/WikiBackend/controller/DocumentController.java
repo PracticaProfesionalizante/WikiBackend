@@ -56,7 +56,7 @@ public class DocumentController {
             @ApiResponse(responseCode = "422", description = "Argumento no valido",
                     content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
     })
-    @PreAuthorize("hasRole('ROLE_SUPER_USER')")
+    @PreAuthorize("hasAnyRole('ROLE_SUPER_USER','ROLE_ADMIN')")
     @PostMapping(value = "/file", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<DocumentDetailResponseDto> createFileDocument(@Valid @ModelAttribute DocumentFileRequestDto request) {
         try {
@@ -87,7 +87,7 @@ public class DocumentController {
                     content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
     })
     @PutMapping("/file/{id}")
-    @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_SUPER_USER')")
+    @PreAuthorize("hasAnyRole('ROLE_SUPER_USER','ROLE_ADMIN')")
     public ResponseEntity<DocumentDetailResponseDto> updateFileDocument(
             @PathVariable Long id,
             @Valid @ModelAttribute DocumentFileRequestDto request
@@ -139,7 +139,7 @@ public class DocumentController {
             @ApiResponse(responseCode = "422", description = "Argumento no valido",
                     content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
     })
-    @PreAuthorize("hasAnyRole('ROLE_SUPER_USER', 'ROLE_ADMIN')")
+    @PreAuthorize("hasAnyRole('ROLE_SUPER_USER','ROLE_ADMIN')")
     @DeleteMapping("/file/{id}")
     public ResponseEntity<?> deleteFileDocument(@PathVariable Long id) {
         try {
@@ -197,7 +197,7 @@ public class DocumentController {
             @ApiResponse(responseCode = "422", description = "No se envio un parametro correcto.",
                     content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
     })
-    @PreAuthorize("hasAnyRole('ROLE_COLLABORATOR', 'ROLE_ADMIN', 'ROLE_SUPER_USER')")
+    @PreAuthorize("isAuthenticated()")
     @GetMapping
     public ResponseEntity<List<DocumentDetailResponseDto>> getAllDocuments(
             @RequestParam(required = false) String type,
@@ -223,7 +223,7 @@ public class DocumentController {
                             content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
             }
     )
-    @PreAuthorize("hasAnyRole('ROLE_SUPER_USER', 'ROLE_ADMIN')")
+    @PreAuthorize("hasAnyRole('ROLE_SUPER_USER','ROLE_ADMIN')")
     @PostMapping
     public ResponseEntity<DocumentDetailResponseDto> createDocument(@Valid @RequestBody DocumentRequestDto request) {
         try {
@@ -248,7 +248,7 @@ public class DocumentController {
                             content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
             }
     )
-    @PreAuthorize("hasAnyRole('ROLE_SUPER_USER', 'ROLE_ADMIN')")
+    @PreAuthorize("hasAnyRole('ROLE_SUPER_USER','ROLE_ADMIN')")
     @PutMapping("/{id}")
     public ResponseEntity<DocumentDetailResponseDto> updateDocument(
             @PathVariable Long id,
@@ -273,7 +273,7 @@ public class DocumentController {
                     @ApiResponse(responseCode = "500", description = "Error del cliente")
             }
     )
-    @PreAuthorize("hasAnyRole('ROLE_SUPER_USER', 'ROLE_ADMIN')")
+    @PreAuthorize("hasAnyRole('ROLE_SUPER_USER','ROLE_ADMIN')")
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteDocument(
             @PathVariable Long id

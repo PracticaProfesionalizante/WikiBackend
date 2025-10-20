@@ -23,7 +23,7 @@ public class MockFileStorageService implements FileStorageService {
     // KEY: FileId (String), VALUE: Los bytes del archivo (byte[])
     private final Map<String, byte[]> fileStorage = new HashMap<>();
 
-    @Value("${app.maxFileSize:52428800}") // Ejemplo de tamaño maximo: 50 MB (50 * 1024 * 1024)
+    @Value("${app.maxFileSize:10485760}") // Ejemplo de tamaño maximo: 10 MB (10×1024×1024)
     private long maxFileSize;
 
     @Autowired
@@ -34,7 +34,7 @@ public class MockFileStorageService implements FileStorageService {
     public String storeFile(MultipartFile file) {
         // 1. Validaciones
         if (file.isEmpty()) {
-            throw new FileStorageException("El archivo es obligatorio[cite: 10].");
+            throw new FileStorageException("El archivo es obligatorio.");
         }
         if (file.getSize() > maxFileSize) {
             // Tamaño máximo configurable (ej.: 50 MB)

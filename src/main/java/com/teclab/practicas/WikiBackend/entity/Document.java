@@ -27,6 +27,8 @@ public class Document {
     private String name;
     private TypeName type;
 
+    private Boolean status = true;
+
     @Column(nullable = false, unique = true)
     private String slug;
 
