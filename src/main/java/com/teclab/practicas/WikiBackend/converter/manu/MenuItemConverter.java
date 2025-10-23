@@ -68,6 +68,7 @@ public class MenuItemConverter {
         dto.setView(menuItem.getView());
         dto.setOrder(menuItem.getOrder());
         dto.setParentId((menuItem.getParent() != null) ? menuItem.getParent().getId() : null);
+        dto.setRoles(menuItem.getRoles().stream().map(rol -> rol.getName().toString()).collect(Collectors.toSet()));
 
         // Mapear recursivamente los hijos a DTOs
         if (menuItem.getChildren() != null && !menuItem.getChildren().isEmpty()) {

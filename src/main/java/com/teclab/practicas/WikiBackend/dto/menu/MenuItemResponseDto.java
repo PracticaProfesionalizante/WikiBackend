@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.util.List;
+import java.util.Set;
 
 @Data
 @NoArgsConstructor
@@ -21,4 +22,5 @@ public class MenuItemResponseDto {
         @Schema(description = "Submenús de este item", type = "array", implementation = MenuItemResponseDto.class)
         private List<MenuItemResponseDto> children;     // Para la jerarquía de submenús
         private Long parentId;
+        private Set<String> roles;
 }
